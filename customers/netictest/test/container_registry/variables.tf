@@ -9,7 +9,7 @@ variable "name_prefix"{}
 
 ## local variables
 
-variable "ContainerRegistry" {
+variable "container_registry" {
   type = object({
     deploy = bool
     name   = string

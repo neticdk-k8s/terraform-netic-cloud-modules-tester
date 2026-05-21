@@ -1,7 +1,7 @@
 
 module "container_registry" {
-  source = "../../../../modules/ovh_container_registry"
+  source = "../../../../modules/container_registry"
   
-  project_id         = var.project_id
+  project_id         = var.ovh_project_id
   container_registry = var.container_registry
 }
