@@ -9,7 +9,7 @@ output "user" {
 }
 
 output "password" {
-  value       = module.container_registry.user.password
+  value       = module.container_registry.password
   sensitive   = true
   description = "The generated password used for authenticating against the registry (Marked Sensitive)"
 }
