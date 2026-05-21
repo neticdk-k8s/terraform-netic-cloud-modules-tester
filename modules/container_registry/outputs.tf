@@ -3,13 +3,10 @@ output "registry_url" {
   description = "The public URL endpoint of the provisioned Container Registry"
 }
 
-output "user" {
-  value       = ovh_cloud_project_containerregistry_user.user.user
-  description = "The generated username used for authenticating against the registry"
-}
 
-output "password" {
-  value       = ovh_cloud_project_containerregistry_user.user.password
+# Returnerer et map: { "bruger1" = "password123", "bruger2" = "password456" }
+output "user_passwords" {
+  value       = { for k, v in ovh_cloud_project_containerregistry_user.user : k => v.password }
   sensitive   = true
-  description = "The generated password used for authenticating against the registry (Marked Sensitive)"
+  description = "Map of registry usernames and their generated passwords"
 }
