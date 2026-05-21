@@ -53,6 +53,16 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+      # -------------------------------------------------------------
+      # Terraform variables
+      # -------------------------------------------------------------
+      #TF_VAR_OS_user: ${{ secrets.OS_USER }}               # Gemt som Secret
+      #TF_VAR_OS_password: ${{ secrets.OS_PASSWORD }}       # Gemt som Secret
+      
+      # TF_VAR_ovh_project_name: ${{ vars.OVH_PROJECT_NAME }} # Gemt som Variable
+      # TF_VAR_ovh_project_id: ${{ vars.OVH_PROJECT_ID }}     # Gemt som Variable
+      
+
     defaults:
       run:
         shell: bash
@@ -92,6 +102,11 @@ jobs:
             exit 1
           fi
 
+          if [ ! -f "$SHARED_DIR/common.auto.tfvars" ]; then
+            echo "Missing shared variables file: $SHARED_DIR/common.auto.tfvars"
+            exit 1
+          fi
+
       - name: Copy shared Terraform configuration
         run: |
           SHARED_DIR="customers/${{ github.event.inputs.customer }}/${{ github.event.inputs.environment }}"
@@ -99,6 +114,7 @@ jobs:
           
           cp "$SHARED_DIR/providers.tf" "$TARGET_DIR/providers.tf"
           cp "$SHARED_DIR/backend.tf" "$TARGET_DIR/backend.tf"
+          cp "$SHARED_DIR/common.auto.tfvars" "$TARGET_DIR/common.auto.tfvars"
  
       - name: Terraform Init
         working-directory: ${{ steps.tfdir.outputs.dir }}

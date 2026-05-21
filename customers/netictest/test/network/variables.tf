@@ -1,4 +1,4 @@
-variable "ovh_project_name" {}
+variable "ovh_project_id" {}
 
 ######################################
 ###          Networks              ###
