@@ -1,6 +1,6 @@
 # Create the private vRack network across the selected regions
 resource "ovh_cloud_project_network_private" "net" {
-  service_name = var.project_id
+  service_name = var.ovh_project_id
   name         = var.network_name
   vlan_id      = var.vlan_id
   regions = [
@@ -13,7 +13,7 @@ resource "ovh_cloud_project_network_private_subnet" "subnet" {
   for_each = {
     for r in var.regions : r.region => r
   }
-  service_name = var.project_id
+  service_name = var.ovh_project_id
   network_id   = ovh_cloud_project_network_private.net.id
 
   region  = each.value.region

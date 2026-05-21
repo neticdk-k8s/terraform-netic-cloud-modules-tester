@@ -1,4 +1,4 @@
-variable "project_id" {
+variable "ovh_project_id" {
   description = "OVH Cloud project ID / service name"
   type        = string
 }

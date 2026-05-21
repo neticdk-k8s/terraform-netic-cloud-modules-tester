@@ -1,5 +1,5 @@
 resource "ovh_cloud_project_containerregistry" "registry" {
-  service_name = var.project_id
+  service_name = var.ovh_project_id
   region       = var.container_registry.region
   name         = var.container_registry.name
 }

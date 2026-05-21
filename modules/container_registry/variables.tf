@@ -1,6 +1,6 @@
 # modules/ovh_container_registry/variables.tf
 
-variable "project_id" {
+variable "ovh_project_id" {
   type        = string
   description = "OVH cloud projektets service ID"
 }
