@@ -1,4 +1,4 @@
-variable "OS_user" {}
+variable "OS_username" {}
 variable "OS_password" {}
 
 variable "ovh_region" {}
