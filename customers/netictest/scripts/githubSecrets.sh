@@ -9,6 +9,9 @@ export OVH_ENDPOINT="ovh-ca"
 export AWS_ACCESS_KEY_ID="3caf29f739924d3ba1caa6f0f5099c8c"
 export AWS_SECRET_ACCESS_KEY="b0ae14c6c83f4323b9fac14341d0ccc4"
 
+export OS_USERNAME="user-m2VqfAnNGsuh"
+export OS_PASSWORD= "zxQDTFHZfQw3HchR3tYWN3QtrnyRhPBe"
+
 
 gh auth login
 
@@ -23,6 +26,9 @@ echo "$OVH_ENDPOINT"| gh variable set OVH_ENDPOINT --repo neticdk-k8s/terraform-
 echo "$AWS_ACCESS_KEY_ID" | gh secret set AWS_ACCESS_KEY_ID --repo neticdk-k8s/terraform-netic-ovhcloud
 echo "$AWS_SECRET_ACCESS_KEY" | gh secret set AWS_SECRET_ACCESS_KEY --repo neticdk-k8s/terraform-netic-ovhcloud
 
+## OpenStack for storage
+echo "$OS_USERNAME" | gh secret set OS_USERNAME --repo neticdk-k8s/terraform-netic-ovhcloud
+echo "$OS_PASSWORD" | gh secret set OS_PASSWORD --repo neticdk-k8s/terraform-netic-ovhcloud
 
 gh variable list --repo neticdk-k8s/terraform-netic-ovhcloud 
 gh secret list --repo neticdk-k8s/terraform-netic-ovhcloud 
