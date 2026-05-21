@@ -14,26 +14,6 @@ variable "environment" {}
 variable "name_prefix"{} 
 
 
-######################################
-###          Storage               ###
-######################################
-
-variable "storage" {
-  type = object({
-    name       = string
-    region     = string
-    regions    = list(string)
-    versioning = string
-  })
-  default = {
-    name       = "storage"
-    region     = "GRA9"
-    regions    = ["GRA9", "BHS5", "UK1"]
-    versioning = "enabled" //  ["disabled" "enabled" "suspended"]
-
-  }
-}
-
 
 
 ######################################

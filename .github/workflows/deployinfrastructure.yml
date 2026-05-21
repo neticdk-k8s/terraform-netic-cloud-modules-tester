@@ -138,7 +138,7 @@ jobs:
 
       - name: Upload Plan Artifact
         if: ${{ github.event.inputs.action != 'destroy' }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: tfplan-${{ github.event.inputs.customer }}-${{ github.event.inputs.environment }}-${{ github.event.inputs.module }}
           path: ${{ steps.tfdir.outputs.dir }}/tfplan
