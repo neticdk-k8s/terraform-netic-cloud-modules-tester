@@ -3,13 +3,9 @@ output "registry_url" {
   description = "The public URL endpoint of the provisioned Container Registry"
 }
 
-output "user" {
-  value       = module.container_registry.user
-  description = "The generated user used for authenticating against the registry"
-}
-
-output "password" {
-  value       = module.container_registry.password
+# Returns a map with users
+output "registry_user_passwords" {
+  value       = module.container_registry.user_passwords
   sensitive   = true
-  description = "The generated password used for authenticating against the registry (Marked Sensitive)"
+  description = "Map of registry usernames and their generated passwords provided by the module"
 }
