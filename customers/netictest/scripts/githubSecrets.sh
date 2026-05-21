@@ -1,16 +1,16 @@
 ##  brew install gh
 
-export OVH_TENANTID="d8a148f6b2d5406b9ac340e25faa50ad"  
-export OVH_APPLICATION_KEY="4629e51cfd387621"
-export OVH_APPLICATION_SECRET="2497b42ead55ea8af6d4cb76ca88d50f"
-export OVH_CONSUMER_KEY="a6537c9641f0d55fc5f299f3455be0c6"
+export OVH_TENANTID="?
+export OVH_APPLICATION_KEY="?
+export OVH_APPLICATION_SECRET=?
+export OVH_CONSUMER_KEY=?
 export OVH_ENDPOINT="ovh-ca" 
 
-export AWS_ACCESS_KEY_ID="3caf29f739924d3ba1caa6f0f5099c8c"
-export AWS_SECRET_ACCESS_KEY="b0ae14c6c83f4323b9fac14341d0ccc4"
+export AWS_ACCESS_KEY_ID=?
+export AWS_SECRET_ACCESS_KEY=?
 
 export OS_USERNAME="user-m2VqfAnNGsuh"
-export OS_PASSWORD= "zxQDTFHZfQw3HchR3tYWN3QtrnyRhPBe"
+export OS_PASSWORD= ?
 
 
 gh auth login
