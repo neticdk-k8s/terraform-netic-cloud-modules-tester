@@ -155,7 +155,8 @@ jobs:
         working-directory: ${{ steps.tfdir.outputs.dir }}
         run: terraform apply -auto-approve tfplan
 
+      # Must specify common.auto.tfvars, otherwise os_username and os_password is unknowm for OpenStack provider
       - name: Terraform Destroy (Execute)
         if: ${{ github.event.inputs.action == 'destroy' }}
         working-directory: ${{ steps.tfdir.outputs.dir }}
-        run: terraform destroy -auto-approve
+        run: terraform destroy -auto-approve -var-file="../common.auto.tfvars"
