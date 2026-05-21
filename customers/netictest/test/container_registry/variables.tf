@@ -7,6 +7,11 @@ variable "ovh_project_name" { }
 variable "environment" {}
 variable "name_prefix"{} 
 
+# OpenStack
+variable "OS_username" {}
+variable "OS_password" {}
+
+
 ## local variables
 
 variable "container_registry" {
