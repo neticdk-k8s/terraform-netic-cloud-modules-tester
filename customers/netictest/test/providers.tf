@@ -42,7 +42,7 @@ provider "openstack" {
   domain_name = "Default"
 
   tenant_id   = var.ovh_project_id 
-  region      = var.storage.region
+  region      = var.ovh_region
 }
 
 provider "ovh" {
