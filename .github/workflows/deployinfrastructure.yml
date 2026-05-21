@@ -1,0 +1,102 @@
+name: Terraform Plan Selector
+
+on:
+  workflow_dispatch:
+    inputs:
+      customer:
+        description: "Customer name"
+        required: true
+        type: choice
+        options:
+          - netictest
+
+      environment:
+        description: "Environment"
+        required: true
+        type: choice
+        options:
+          - test
+          - prod
+          - dev
+
+      module:
+        description: "Terraform module"
+        required: true
+        type: choice
+        options:
+          - network
+          - storage
+          - compute
+
+env:
+  TF_VERSION: "1.8.5"
+
+jobs:
+  terraform-plan:
+    runs-on: ubuntu-latest
+
+    env:
+      OVH_ENDPOINT: ${{ secrets.OVH_ENDPOINT }}
+      OVH_APPLICATION_KEY: ${{ secrets.OVH_APPLICATION_KEY }}
+      OVH_APPLICATION_SECRET: ${{ secrets.OVH_APPLICATION_SECRET }}
+      OVH_CONSUMER_KEY: ${{ secrets.OVH_CONSUMER_KEY }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Set Terraform directory
+        id: tfdir
+        run: |
+          TF_DIR="terraform-netic-ovhcloud/customers/${{ github.event.inputs.customer }}/${{ github.event.inputs.environment }}/${{ github.event.inputs.module }}"
+
+          if [ ! -d "$TF_DIR" ]; then
+            echo "Directory not found: $TF_DIR"
+            exit 1
+          fi
+
+          echo "dir=$TF_DIR" >> $GITHUB_OUTPUT
+
+      - name: Verify shared Terraform files exist
+        run: |
+          if [ ! -f "terraform-netic-ovhcloud/customers/${{ github.event.inputs.customer }}/${{ github.event.inputs.environment }}/providers.tf" ]; then
+            echo "Missing shared provider file: /providers.tf"
+            exit 1
+          fi
+
+          if [ ! -f "terraform-netic-ovhcloud/customers/${{ github.event.inputs.customer }}/${{ github.event.inputs.environment }}//backend.tf" ]; then
+            echo "Missing shared backend file: Terraform/backend.tf"
+            exit 1
+          fi
+
+      - name: Copy shared Terraform configuration
+        run: |
+          cp "terraform-netic-ovhcloud/customers/${{ github.event.inputs.customer }}/${{ github.event.inputs.environment }}//providers.tf" "${{ steps.tfdir.outputs.dir }}/providers.tf"
+          cp "terraform-netic-ovhcloud/customers/${{ github.event.inputs.customer }}/${{ github.event.inputs.environment }}Terraform/backend.tf" "${{ steps.tfdir.outputs.dir }}/backend.tf"
+ 
+      - name: Terraform Init
+        working-directory: ${{ steps.tfdir.outputs.dir }}
+        run: terraform init
+
+      - name: Terraform Validate
+        working-directory: ${{ steps.tfdir.outputs.dir }}
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: ${{ steps.tfdir.outputs.dir }}
+        run: terraform plan -out=tfplan
+
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ github.event.inputs.customer }}-${{ github.event.inputs.environment }}-${{ github.event.inputs.module }}
+          path: ${{ steps.tfdir.outputs.dir }}/tfplan
