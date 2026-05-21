@@ -22,3 +22,34 @@ variable "container_registry" {
     region = "DE"
   }
 }
+
+variable "registry_users" {
+  type = list(object({
+    login = string
+    email = string
+  }))
+  description = "List of user accounts to create in the container registry"
+  
+  default = [
+    {
+      login = "netic-registry-user"
+      email = "infra-automation@netic.dk"
+    },
+    {
+      login = "github-actions-cicd"
+      email = "github-automation@netic.dk"
+    },
+    {
+      login = "dev-lead-readwrite"
+      email = "dev-lead@netic.dk"
+    },
+    {
+      login = "external-partner-ro"
+      email = "consultant@externalpartner.com"
+    },
+    {
+      login = "argocd-cluster-puller"
+      email = "k8s-automation@netic.dk"
+    }
+  ]
+}
