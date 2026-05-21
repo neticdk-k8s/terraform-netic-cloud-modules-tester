@@ -1,8 +1,10 @@
+## Common variables
 variable "ovh_project_id" {}
+variable "ovh_region"   { }
+variable "ovh_api_region" { }
+variable "ovh_project_name" { } 
 
-######################################
-###          Networks              ###
-######################################
+## local variables
 
 variable "network" {
   type = object({
