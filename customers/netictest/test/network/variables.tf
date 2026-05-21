@@ -25,8 +25,8 @@ variable "network" {
   })
 
   default = {
-    name = "vnet"
-    vlan = 1800
+    name = "net"
+    vlan = 1900
 
     regions = [
       {

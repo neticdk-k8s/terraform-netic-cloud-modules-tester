@@ -1,3 +1,1 @@
-# Deploy network
-
-This part deploys the network relevant for the customer setup
+# Deploy container registry for kubernetes

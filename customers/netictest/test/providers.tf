@@ -22,7 +22,7 @@ required_version    = ">= 0.14.0"
     }
   }
   backend "s3" {
-    bucket   = "state2" 
+    bucket   = "tf-state-netictest-test2" 
     key      = "terraform.tfstate"
     region   = "bhs"                  # Din region i små bogstaver (f.eks. gra, sbg, waw)
      endpoints = {
@@ -36,24 +36,6 @@ required_version    = ">= 0.14.0"
   }
 
 }
-
-/*
-provider "openstack" {
-  auth_url    = "https://auth.cloud.ovh.net/v3"
-  domain_name = "Default"
-  user_name   = var.OS_user
-  password    = var.OS_password
-  tenant_id   = var.ovh_tenantid
-  region      = var.ovh_region
-}
-
-provider "ovh" {
-  endpoint           = var.ovh_api_region
-  application_key    = var.ovh_application_key
-  application_secret = var.ovh_application_secret
-  consumer_key       = var.ovh_consumer_key
-}
-*/
 
 provider "openstack" {
   auth_url    = "https://auth.cloud.ovh.net/v3"
