@@ -40,6 +40,9 @@ required_version    = ">= 0.14.0"
 provider "openstack" {
   auth_url    = "https://auth.cloud.ovh.net/v3"
   domain_name = "Default"
+
+  tenant_id   = var.ovh_project_id 
+  region      = var.storage.region
 }
 
 provider "ovh" {

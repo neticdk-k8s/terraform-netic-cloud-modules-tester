@@ -42,7 +42,7 @@ on:
 env:
   TF_VERSION: "1.8.5"
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-  # For Openstack provider login
+  # For Openstack provider login.  OpenStack does not save credentials in statefile, so if defined here, all steps can reach the credentials
   OS_USERNAME: ${{ secrets.OS_USERNAME }}            
   OS_PASSWORD: ${{ secrets.OS_PASSWORD }}         
   OS_PROJECT_ID: ${{ vars.OVH_PROJECT_ID }}       
