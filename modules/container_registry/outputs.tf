@@ -3,7 +3,7 @@ output "registry_url" {
   description = "The public URL endpoint of the provisioned Container Registry"
 }
 
-output "username" {
+output "user" {
   value       = ovh_cloud_project_containerregistry_user.user.user
   description = "The generated username used for authenticating against the registry"
 }
