@@ -4,7 +4,11 @@ variable "ovh_region"   { }
 variable "ovh_api_region" { }
 variable "ovh_project_name" { } 
 
+variable "environment" {}
+variable "name_prefix"{} 
+
 ## local variables
+
 
 variable "network" {
   type = object({

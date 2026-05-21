@@ -10,6 +10,8 @@ variable "ovh_consumer_key" {}
 variable "ovh_tenantid" {}
 variable "ovh_api_region" {}
 
+variable "environment" {}
+variable "name_prefix"{} 
 
 
 ######################################
@@ -32,46 +34,6 @@ variable "storage" {
   }
 }
 
-
-######################################
-###          Networks              ###
-######################################
-
-variable "network" {
-  type = object({
-    name = string
-    vlan = number
-
-    regions = list(object({
-    region              = string
-    subnet              = string
-    dhcp                = optional(bool, true)   # Defaults to true if omitted by the user
-    ip_allocation_start = optional(number, 10)   # Defaults to 10 if omitted by the user
-    ip_allocation_stop  = optional(number, 200)  # Defaults to 200 if omitted by the user
-    }))
-  })
-
-  default = {
-    name = "vnet"
-    vlan = 1800
-
-    regions = [
-      {
-        region = "GRA9"
-        subnet = "192.168.10.0/24"
-      },
-      {
-        region = "BHS5"
-        subnet = "192.168.11.0/24"
-      },
-      {
-        region = "UK1"
-        subnet = "192.168.12.0/24"
-        dhcp   = false
-      }
-    ]
-  }
-}
 
 
 ######################################
@@ -120,23 +82,6 @@ variable "ManagedKMSCliuster" {
   }
 }
 
-######################################
-###   Private Container Registry   ###
-######################################
-
-variable "ContainerRegistry" {
-  type = object({
-    deploy = bool
-    name   = string
-    region = string
-
-  })
-  default = {
-    deploy = true
-    name   = "my-docker-private-registry"
-    region = "DE"
-  }
-}
 ######################################
 ###            Identities         ###
 ######################################

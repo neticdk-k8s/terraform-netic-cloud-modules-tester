@@ -25,6 +25,7 @@ on:
         type: choice
         options:
           - network
+          - container_registry
           - storage
           - compute
 
@@ -39,6 +40,7 @@ on:
 
 env:
   TF_VERSION: "1.8.5"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
   terraform:
@@ -69,10 +71,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
@@ -129,7 +131,7 @@ jobs:
         run: terraform plan -out=tfplan
 
       - name: Upload Plan Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: tfplan-${{ github.event.inputs.customer }}-${{ github.event.inputs.environment }}-${{ github.event.inputs.module }}
           path: ${{ steps.tfdir.outputs.dir }}/tfplan
