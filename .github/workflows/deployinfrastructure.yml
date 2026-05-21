@@ -43,9 +43,7 @@ env:
   TF_VERSION: "1.8.5"
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
   # For Openstack provider login.  OpenStack does not save credentials in statefile, so if defined here, all steps can reach the credentials
-  OS_USERNAME: ${{ secrets.OS_USERNAME }}            
-  OS_PASSWORD: ${{ secrets.OS_PASSWORD }}         
-  OS_PROJECT_ID: ${{ vars.OVH_PROJECT_ID }}       
+   
 
 jobs:
   terraform:
@@ -60,6 +58,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+      ## OpenStack values.  Not working with env variables, but this step sets variables in terraform directly
       TF_VAR_os_username: ${{ secrets.OS_USERNAME }}
       TF_VAR_os_password: ${{ secrets.OS_PASSWORD }}
 

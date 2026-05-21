@@ -4,3 +4,10 @@ module "storage" {
   block_storage = var.block_storage
   ovh_project_id = var.ovh_project_id
 }
+
+module "storageobject" {
+  source = "../../../../modules/storage"
+  deployment_type = "object"
+  object_storage = var.object_storage
+  ovh_project_id = var.ovh_project_id
+}
