@@ -7,6 +7,9 @@
 module "control_plane" {
   source = "../../../../modules/vm"
   count        = var.VMcount
-  network_name = var.private_network_name # Or: data.ovh_cloud_project_network_private.net.name
-  vm           = var.ControlPlaneVM
+
+  // Update variable with count, so we dont create same machine several times
+  vm = merge(var.ControlPlaneVM, {
+    name = "${var.ControlPlaneVM.name}-${count.index}"
+  })
 }

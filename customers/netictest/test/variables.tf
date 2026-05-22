@@ -1,17 +1,17 @@
-variable "OS_username" {}
-variable "OS_password" {}
-
-variable "ovh_region" {}
-variable "ovh_project_name" {}
+## Common variables
 variable "ovh_project_id" {}
-variable "ovh_application_key" {}
-variable "ovh_application_secret" {}
-variable "ovh_consumer_key" {}
-variable "ovh_tenantid" {}
-variable "ovh_api_region" {}
+variable "ovh_region"   { }
+variable "ovh_api_region" { }
+variable "ovh_project_name" { } 
 
 variable "environment" {}
 variable "name_prefix"{} 
+
+# OpenStack
+variable "OS_username" {}
+variable "OS_password" {}
+
+## local variables
 
 
 

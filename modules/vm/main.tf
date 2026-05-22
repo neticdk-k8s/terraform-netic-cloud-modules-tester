@@ -1,23 +1,26 @@
+# https://registry.terraform.io/providers/terraform-provider-openstack/openstack/latest/docs/resources/compute_instance_v2
+
 locals {
   # Check if the word "windows" exists in the image name (case-insensitive using (?i))
   is_windows = can(regex("(?i)windows", var.vm.image_name))
-  
-  # Only generate SSH key if enable_ssh_key is true AND the OS is NOT Windows
-  create_ssh_key = var.vm.enable_ssh_key && !local.is_windows
+
+  # Generate a new SSH key ONLY if no existing key is provided AND it is NOT a Windows VM
+  create_ssh_key = var.vm.sshkey == null && !local.is_windows
 }
+
 
 ######################################
 ###          SSH Key Section       ###
 ######################################
 
-# Generate SSH keypair (conditional based on OS/override)
+# Generate SSH keypair (conditional)
 resource "tls_private_key" "ssh_key" {
   count     = local.create_ssh_key ? 1 : 0
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
-# Save the private key locally
+# Save private key locally (conditional)
 resource "local_file" "private_key" {
   count           = local.create_ssh_key ? 1 : 0
   filename        = "${path.root}/${var.vm.name}_id_rsa"
@@ -25,10 +28,10 @@ resource "local_file" "private_key" {
   file_permission = "0600"
 }
 
-# Upload the public key to OVH/OpenStack
+# Upload public key to OVH/OpenStack (conditional)
 resource "openstack_compute_keypair_v2" "default" {
   count      = local.create_ssh_key ? 1 : 0
-  name       = "${var.vm.name}-key"
+  name       = "${var.vm.name}-generated-key"
   public_key = tls_private_key.ssh_key[0].public_key_openssh
 }
 
@@ -37,16 +40,22 @@ resource "openstack_compute_keypair_v2" "default" {
 ######################################
 
 # Main VM instance
-resource "openstack_compute_instance_v2" "VMs" {
-  name            = "${var.vm.name}"
-  flavor_name     = var.vm.size
-  image_name      = var.vm.image_name
-  
-  key_pair        = local.create_ssh_key ? openstack_compute_keypair_v2.default[0].name : null
+resource "openstack_compute_instance_v2" "VMLinux" {
+  count       = local.is_windows ? 0 : 1
+  name        = var.vm.name
+  flavor_name = var.vm.size
+  image_name  = var.vm.image_name
+
+  key_pair        = local.create_ssh_key ? openstack_compute_keypair_v2.default[0].name : var.vm.sshkey
   security_groups = ["default"]
 
-  network {
-    name = var.network_name
+  power_state     = var.vm.power_state
+
+  dynamic "network" {
+    for_each = var.vm.network_names
+    content {
+      name = network.value
+    }
   }
 
   lifecycle {
@@ -54,20 +63,22 @@ resource "openstack_compute_instance_v2" "VMs" {
   }
 }
 
-# Optional Public Windows VM
-resource "openstack_compute_instance_v2" "VMPublicNet" {
-  count           = var.vm.create_public_windows_vm ? 1 : 0
-  name            = "publicnet-${var.vm.name}"
+
+resource "openstack_compute_instance_v2" "VMWindows" {
+  count           = local.is_windows ? 1 : 0
+  name            = var.vm.name
   flavor_name     = var.vm.size
-  image_name      = "Windows Server 2025 Standard (Desktop)"
-  admin_pass      = "Password123!"
+  image_name      = var.vm.image_name
+  admin_pass      = var.vm.admin_pass
   security_groups = ["default"]
 
-  network {
-    name = var.network_name
-  }
-  network {
-    name = "Ext-Net"
+  power_state     = var.vm.power_state
+  
+  dynamic "network" {
+    for_each = var.vm.network_names
+    content {
+      name = network.value
+    }
   }
 
   lifecycle {

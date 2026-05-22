@@ -16,13 +16,7 @@ variable "OS_password" {}
 
 variable "VMcount" {
   type    = number
-  default = 1
-}
-
-variable "private_network_name" {
-  type        = string
-  description = "The name of the private network to attach the VMs to"
-  default     = "netic-net-test"
+  default = 2
 }
 
 variable "ControlPlaneVM" {
@@ -30,15 +24,15 @@ variable "ControlPlaneVM" {
     name                     = string
     size                     = string
     image_name               = string
-    enable_ssh_key           = optional(bool, true)  # Defaults to true if omitted
-    create_public_windows_vm = optional(bool, false) # Defaults to false if omitted
+    sshkey                   = optional(string, null)
+    admin_pass               = optional(string, "Password123!")
+    network_names            = optional(list(string), []) 
+    power_state              = optional(string, "active")
   })
   default = {
     name                     = "netic-cp"
     size                     = "b2-7"
     image_name               = "Ubuntu 24.04"
-    enable_ssh_key           = true
-    create_public_windows_vm = false
+    network_names            = [ "netic-net-test" ]
   }
 }
-

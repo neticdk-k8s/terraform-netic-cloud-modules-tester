@@ -1,5 +1,5 @@
 # Do not move secret script to github
-githubSecrets.sh
+**/githubSecrets.sh
 
 # MACOS
 .DS_Store

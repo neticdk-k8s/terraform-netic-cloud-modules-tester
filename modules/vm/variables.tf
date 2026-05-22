@@ -3,13 +3,11 @@ variable "vm" {
     name                     = string
     size                     = string
     image_name               = string
-    enable_ssh_key           = optional(bool, true)  # Defaults to true if omitted
-    create_public_windows_vm = optional(bool, false) # Defaults to false if omitted
+    sshkey                   = optional(string, null)           // For Linux images.  If not provided, one is generated
+    admin_pass               = optional(string,"Password123!")  // For Windows images
+    network_names            = optional(list(string), []) 
+
+    power_state              = optional(string, "active")       // "shutoff", "paused", "shelved_offloaded"
   })
   description = "Combined configuration object for the virtual machine"
-}
-
-variable "network_name" {
-  type        = string
-  description = "The name of the target private network"
 }
