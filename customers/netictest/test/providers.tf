@@ -1,4 +1,5 @@
-# Define providers and set versions
+# Defines which plugins to load
+
 terraform {
   required_version = ">= 0.14.0"
   required_providers {
@@ -12,7 +13,6 @@ terraform {
       version = ">= 2.1.0"
     }
 
-    // For SSL
     tls = {
       source = "hashicorp/tls"
     }
@@ -21,20 +21,6 @@ terraform {
       source = "hashicorp/local"
     }
   }
-  backend "s3" {
-    bucket = "tf-state-netictest-test2"
-    key    = "terraform.tfstate"
-    region = "bhs" # Din region i små bogstaver (f.eks. gra, sbg, waw)
-    endpoints = {
-      s3 = "https://s3.bhs.io.cloud.ovh.net"
-    }
-    # Vitale indstillinger når man bruger S3-backenden uden for AWS:
-    skip_credentials_validation = true
-    skip_region_validation      = true
-    skip_requesting_account_id  = true
-    skip_metadata_api_check     = true
-  }
-
 }
 
 provider "openstack" {

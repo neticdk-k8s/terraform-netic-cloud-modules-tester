@@ -38,13 +38,18 @@ on:
           - plan
           - deploy
           - destroy 
+      debug:
+        description: 'Enable Terraform Detailed Debug Logging?'
+        required: true
+        type: boolean
+        default: false
 
 env:
   TF_VERSION: "1.8.5"
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
-  ## For debug. Remove when development is complete
-  TF_LOG: "DEBUG"
+  ## Debug info for terraform if needed
+  TF_LOG: ${{ github.event.inputs.debug == 'true' && 'DEBUG' || '' }}
 
 
 jobs:
