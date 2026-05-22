@@ -61,8 +61,8 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       ## OpenStack values.  Not working with env variables, but this step sets variables in terraform directly
-      TF_VAR_os_username: ${{ secrets.OS_USERNAME }}
-      TF_VAR_os_password: ${{ secrets.OS_PASSWORD }}
+      TF_VAR_OS_username: ${{ secrets.OS_USERNAME }}
+      TF_VAR_OS_password: ${{ secrets.OS_PASSWORD }}
 
 
     defaults:
