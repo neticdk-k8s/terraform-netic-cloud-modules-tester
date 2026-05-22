@@ -27,7 +27,7 @@ on:
           - network
           - container_registry
           - storage
-          - compute
+          - vm
 
       action:
         description: "Plan, Deploy or Destroy"
@@ -39,7 +39,7 @@ on:
           - deploy
           - destroy 
       debug:
-        description: 'Enable Terraform Detailed Debug Logging?'
+        description: 'Enable Terraform Debug Log'
         required: true
         type: boolean
         default: false
