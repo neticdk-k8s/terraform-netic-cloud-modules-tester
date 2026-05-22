@@ -26,8 +26,8 @@ on:
         options:
           - network
           - container_registry
-          - storage
           - vm
+          - storage
 
       action:
         description: "Plan, Deploy or Destroy"
