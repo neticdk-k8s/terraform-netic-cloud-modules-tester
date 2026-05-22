@@ -20,7 +20,7 @@ resource "ovh_cloud_project_storage" "storage" {
   }
 
   object_lock = {
-    status = var.object_storage.object_lock_days > 0
+    status = var.object_storage.object_lock_days > 0 ? "enabled" : "disabled"
     rule = {
       mode   = "governance"
       period = "P${var.object_storage.object_lock_days}D"
