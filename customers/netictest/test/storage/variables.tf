@@ -53,7 +53,7 @@ variable "block_storage" {
 
   default = {
     name                 = "block-test-storage"
-    region               = "GRA"
+    region               = "GRA11"  ## Openstack and OVH Clouds not the same
     size                 = 10
     volume_type          = "classic"
     description          = "Storage"
