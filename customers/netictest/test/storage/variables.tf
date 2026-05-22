@@ -53,7 +53,8 @@ variable "block_storage" {
 
   default = {
     name                 = "block-test-storage"
-    region               = "GRA11"  ## Openstack and OVH Clouds not the same
+    region               = "GRA9"  ## Openstack and OVH Clouds not the same
+                                   ## Run openstack catalo show <name> and look for endpoints locations
     size                 = 10
     volume_type          = "classic"
     description          = "Storage"
