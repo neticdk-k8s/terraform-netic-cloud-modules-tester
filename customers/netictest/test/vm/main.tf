@@ -6,10 +6,16 @@
 
 module "control_plane" {
   source = "../../../../modules/vm"
-  count        = var.VMcount
+  count        = var.ControlPlaneVM_VMCount
 
   // Update variable with count, so we dont create same machine several times
   vm = merge(var.ControlPlaneVM, {
     name = "${var.ControlPlaneVM.name}-${count.index}"
   })
 }
+
+module "control_plane_Windows" {
+  source = "../../../../modules/vm"
+   vm = var.WindowsVM
+}
+
