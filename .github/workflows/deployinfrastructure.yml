@@ -1,4 +1,5 @@
 name: Terraform Plan & Deploy Selector
+run-name: "TF: ${{ inputs.action }} på ${{ inputs.environment }} (af @${{ github.actor }})"
 
 on:
   workflow_dispatch:
