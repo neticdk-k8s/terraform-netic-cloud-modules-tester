@@ -8,6 +8,7 @@ variable "vm" {
     network_names            = optional(list(string), []) 
 
     power_state              = optional(string, "active")       // "shutoff", "paused", "shelved_offloaded"
+    user_data                = optional(string, null)           // For scripts
   })
   description = "Combined configuration object for the virtual machine"
 }

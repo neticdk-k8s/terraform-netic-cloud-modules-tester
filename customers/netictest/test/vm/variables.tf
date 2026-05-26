@@ -36,6 +36,7 @@ variable "ControlPlaneVM" {
     admin_pass    = optional(string, "Password123!")
     network_names = optional(list(string), [])
     power_state   = optional(string, "active")
+    user_data                = optional(string, null)           // For scripts
   })
   default = {
     name          = "netic-cp"

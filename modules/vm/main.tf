@@ -1,5 +1,6 @@
 # https://registry.terraform.io/providers/terraform-provider-openstack/openstack/latest/docs/resources/compute_instance_v2
 
+# Networks accessable : 'openstack network list'
 locals {
   # Check if the word "windows" exists in the image name (case-insensitive using (?i))
   is_windows = can(regex("(?i)windows", var.vm.image_name))
@@ -51,6 +52,8 @@ resource "openstack_compute_instance_v2" "VMLinux" {
 
   power_state     = var.vm.power_state
 
+  user_data       = var.vm.user_data
+  
   dynamic "network" {
     for_each = var.vm.network_names
     content {
