@@ -1,37 +1,34 @@
-## Common variables
-variable "ovh_project_id" {}
-variable "ovh_region"   { }
-variable "ovh_api_region" { }
-variable "ovh_project_name" { } 
+# Common variables
+variable "ovh_project_id" { type = string }
+variable "ovh_region" { type = string }
+variable "ovh_api_region" { type = string }
+variable "ovh_project_name" { type = string }
 
-variable "environment" {}
-variable "name_prefix"{} 
+variable "environment" { type = string }
+variable "name_prefix" { type = string }
 
 # OpenStack 
-variable "OS_username" {}
-variable "OS_password" {}
+variable "OS_username" { type = string }
+variable "OS_password" { type = string }
 
-## local variables
-
-
+## Network Configuration
 variable "network" {
   type = object({
     name = string
     vlan = number
 
     regions = list(object({
-    region              = string
-    subnet              = string
-    dhcp                = optional(bool, true)   # Defaults to true if omitted by the user
-    ip_allocation_start = optional(number, 10)   # Defaults to 10 if omitted by the user
-    ip_allocation_stop  = optional(number, 200)  # Defaults to 200 if omitted by the user
+      region              = string
+      subnet              = string
+      dhcp                = optional(bool, true)
+      ip_allocation_start = optional(number, 10)
+      ip_allocation_stop  = optional(number, 200)
     }))
   })
 
   default = {
     name = "netic-vpn-net"
     vlan = 1901
-
     regions = [
       {
         region = "GRA9"
@@ -41,7 +38,7 @@ variable "network" {
   }
 }
 
-
+## VPN VM Configuration (Ren og overskuelig)
 variable "vpn_vm" {
   type = object({
     name          = string
@@ -51,26 +48,32 @@ variable "vpn_vm" {
     admin_pass    = optional(string, "Password123!")
     network_names = optional(list(string), [])
     power_state   = optional(string, "active")
-    user_data     = optional(string, null)           // For scripts
-
+    user_data     = optional(string, null) # Udfyldes dynamisk i main.tf
   })
-default = {
+  default = {
     name          = "netic-vpn"
     size          = "b2-7"
     image_name    = "Ubuntu 24.04"
     network_names = ["netic-vpn-net", "Ext-Net"]
-    
-    user_data     = <<-EOT
-      #!/bin/bash
-      # 1. Permanent aktivering af IP forwarding i sysctl
-      echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
-      
-      # 2. Genindlæs sysctl så det træder i kraft med det samme
-      sysctl -p
-      
-      # 3. Valgfrit: Installer stærke netværksværktøjer eller vpn med det samme
-      apt-get update
-      apt-get install -y strongswan iptables-persistent
-    EOT
   }
+}
+
+## Azure VPN specifikke input (Sættes f.eks. i din terraform.tfvars eller GitHub Secrets)
+variable "azure_vpn_gateway_ip" {
+  type        = string
+  description = "Den offentlige IP på Azures Virtual Network Gateway"
+  default     = "2.2.2.2"
+}
+
+variable "azure_vnet_subnet_cidr" {
+  type        = string
+  description = "Subnettet i Azure som OVH skal kunne route til (f.eks. 10.100.0.0/16)"
+  default = "10.100.0.0/16"
+}
+
+variable "azure_vpn_secret" {
+  type        = string
+  sensitive   = true
+  description = "Pre-Shared Key (PSK) / Shared Secret fra din Azure VPN opsætning"
+  default = "sdfkljasdfæljkasæf"
 }
