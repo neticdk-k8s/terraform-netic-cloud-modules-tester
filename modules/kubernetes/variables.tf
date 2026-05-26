@@ -1,3 +1,13 @@
+variable "ovh_project_id" {
+  type        = string
+  description = "OVH Public Cloud Project ID"
+}
+
+variable "ovh_region" {
+  type        = string
+  description = "OVH Region (fx GRA11)"
+}
+
 variable "kube_cluster" {
   type = object({
     name            = string
