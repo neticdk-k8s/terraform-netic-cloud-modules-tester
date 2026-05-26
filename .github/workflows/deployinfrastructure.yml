@@ -27,6 +27,7 @@ on:
         options:
           - network
           - container_registry
+          - managed_kubernetes
           - vm
           - storage
 
