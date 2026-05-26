@@ -1,3 +1,8 @@
+variable "ovh_project_id" {
+  description = "OVH Cloud project ID / service name"
+  type        = string
+}
+
 variable "vm" {
   type = object({
     name                     = string
