@@ -1,3 +1,18 @@
+## Common variables
+variable "ovh_project_id" {}
+variable "ovh_region"   { }
+variable "ovh_api_region" { }
+variable "ovh_project_name" { } 
+
+variable "environment" {}
+variable "name_prefix"{} 
+
+# OpenStack
+variable "OS_username" {}
+variable "OS_password" {}
+
+## local variables
+
 variable "ManagedKMSCluster" {
   type = object({
     deploy          = bool
