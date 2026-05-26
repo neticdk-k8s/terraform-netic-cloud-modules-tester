@@ -28,12 +28,22 @@ resource "local_file" "private_key" {
   content         = tls_private_key.ssh_key[0].private_key_pem
   file_permission = "0600"
 }
-
-# Upload public key to OVH/OpenStack (conditional)
+/*
+## This is only relevant when running from terminal
+## When using github, we dont have direct access, except from statefil
+# Upload public key to OVH/OpenStack (conditional) (next step)
 resource "openstack_compute_keypair_v2" "default" {
   count      = local.create_ssh_key ? 1 : 0
   name       = "${var.vm.name}-generated-key"
   public_key = tls_private_key.ssh_key[0].public_key_openssh
+}
+*/
+
+resource "ovh_cloud_project_ssh_key" "default" {
+  count        = local.create_ssh_key ? 1 : 0
+  service_name = var.ovh_project_id  # Dit projekt-ID fra variablen
+  name         = "${var.vm.name}-generated-key"
+  public_key   = tls_private_key.ssh_key[0].public_key_openssh
 }
 
 ######################################
@@ -47,7 +57,8 @@ resource "openstack_compute_instance_v2" "VMLinux" {
   flavor_name = var.vm.size
   image_name  = var.vm.image_name
 
-  key_pair        = local.create_ssh_key ? openstack_compute_keypair_v2.default[0].name : var.vm.sshkey
+  // key_pair     = local.create_ssh_key ? openstack_compute_keypair_v2.default[0].name : var.vm.sshkey
+  key_pair        = local.create_ssh_key ? ovh_cloud_project_ssh_key.default[0].name : var.vm.sshkey
   security_groups = ["default"]
 
   power_state     = var.vm.power_state
