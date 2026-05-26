@@ -30,6 +30,7 @@ on:
           - managed_kubernetes
           - vm
           - storage
+          - network_and_vpn
 
       action:
         description: "Plan, Deploy or Destroy"
