@@ -21,6 +21,9 @@ resource "tls_private_key" "ssh_key" {
   rsa_bits  = 4096
 }
 
+/*
+## This is only relevant when running from terminal
+## When using github, we dont have direct access, except from statefil
 # Save private key locally (conditional)
 resource "local_file" "private_key" {
   count           = local.create_ssh_key ? 1 : 0
@@ -28,9 +31,7 @@ resource "local_file" "private_key" {
   content         = tls_private_key.ssh_key[0].private_key_pem
   file_permission = "0600"
 }
-/*
-## This is only relevant when running from terminal
-## When using github, we dont have direct access, except from statefil
+
 # Upload public key to OVH/OpenStack (conditional) (next step)
 resource "openstack_compute_keypair_v2" "default" {
   count      = local.create_ssh_key ? 1 : 0

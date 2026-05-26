@@ -17,9 +17,11 @@ terraform {
       source = "hashicorp/tls"
     }
 
+    /*
     local = {
       source = "hashicorp/local"
     }
+    */
   }
 }
 
