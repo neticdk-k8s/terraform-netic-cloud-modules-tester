@@ -75,6 +75,8 @@ resource "openstack_compute_instance_v2" "VMLinux" {
   lifecycle {
     ignore_changes = [image_name]
   }
+
+  depends_on = [ ovh_cloud_project_ssh_key.default ]
 }
 
 
