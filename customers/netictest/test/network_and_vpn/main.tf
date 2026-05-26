@@ -17,6 +17,7 @@ module "network" {
 module "vpnvm" {
   source = "../../../../modules/vm"
   vm = var.vpn_vm
+  depends_on = [ module.network ]
 }
 
 
