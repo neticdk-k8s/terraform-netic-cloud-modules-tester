@@ -1,11 +1,3 @@
-variable "ovh_project_id" {
-  type = string
-}
-
-variable "ovh_region" {
-  type = string
-}
-
 variable "kube_cluster" {
   type = object({
     name            = string
@@ -16,11 +8,11 @@ variable "kube_cluster" {
     nodes_max       = number
     labels          = optional(map(string), {})
     ip_restrictions = optional(list(string), [])
-
-    taints = optional(list(object({
+    
+    taints          = optional(list(object({
       key    = string
       value  = string
       effect = string
-    })), null)
+    })), []) 
   })
 }
