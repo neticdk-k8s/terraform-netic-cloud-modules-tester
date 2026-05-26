@@ -8,7 +8,7 @@
 module "network" {
   source = "../../../../modules/network"
   ovh_project_id = var.ovh_project_id
-  network_name   = "${var.name_prefix}-${var.network.name}-${var.environment}"
+  network_name   = var.network.name
   vlan_id        = var.network.vlan
   regions        = var.network.regions
 }
@@ -19,7 +19,3 @@ module "vpnvm" {
   vm = var.vpn_vm
   depends_on = [ module.network ]
 }
-
-
-// Activate ip-forwarding on vm 
-//   net.ipv4.ip_forward = 1
