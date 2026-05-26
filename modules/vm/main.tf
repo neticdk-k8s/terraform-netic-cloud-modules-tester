@@ -42,9 +42,10 @@ resource "openstack_compute_keypair_v2" "default" {
 
 resource "ovh_cloud_project_ssh_key" "default" {
   count        = local.create_ssh_key ? 1 : 0
-  service_name = var.ovh_project_id  # Dit projekt-ID fra variablen
+  service_name = var.ovh_project_id  
   name         = "${var.vm.name}-generated-key"
-  public_key   = tls_private_key.ssh_key[0].public_key_openssh
+  // public_key   = tls_private_key.ssh_key[0].public_key_openssh
+  public_key   = trimspace(tls_private_key.ssh_key[0].public_key_openssh) // Removes \n at the end of ssh
 }
 
 ######################################
@@ -60,6 +61,7 @@ resource "openstack_compute_instance_v2" "VMLinux" {
 
   // key_pair     = local.create_ssh_key ? openstack_compute_keypair_v2.default[0].name : var.vm.sshkey
   key_pair        = local.create_ssh_key ? ovh_cloud_project_ssh_key.default[0].name : var.vm.sshkey
+// key_pair = local.create_ssh_key ? one(ovh_cloud_project_ssh_key.default[*].name) : var.vm.sshkey
   security_groups = ["default"]
 
   power_state     = var.vm.power_state
