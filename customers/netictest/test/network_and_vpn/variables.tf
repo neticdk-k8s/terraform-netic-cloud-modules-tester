@@ -30,7 +30,7 @@ variable "network" {
 
   default = {
     name = "netic-vpn-net"
-    vlan = 1900
+    vlan = 1901
 
     regions = [
       {

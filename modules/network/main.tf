@@ -1,4 +1,5 @@
 # Create the private vRack network across the selected regions
+# - Remember : Only one network per vlan
 resource "ovh_cloud_project_network_private" "net" {
   service_name = var.ovh_project_id
   name         = var.network_name
