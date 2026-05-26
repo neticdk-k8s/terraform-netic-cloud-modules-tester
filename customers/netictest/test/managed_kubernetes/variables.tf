@@ -35,7 +35,7 @@ variable "ManagedKMSCluster" {
   default = {
     deploy          = true
     name            = "netic-k8s-test"
-    version         = "1.30"
+    version         = "1.34"
     size            = "b2-7"
     nodes_count     = 1
     nodes_min       = 1
