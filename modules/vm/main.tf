@@ -32,13 +32,14 @@ resource "local_file" "private_key" {
   file_permission = "0600"
 }
 
+*/
+
 # Upload public key to OVH/OpenStack (conditional) (next step)
 resource "openstack_compute_keypair_v2" "default" {
   count      = local.create_ssh_key ? 1 : 0
   name       = "${var.vm.name}-generated-key"
-  public_key = tls_private_key.ssh_key[0].public_key_openssh
+  public_key =  trimspace(tls_private_key.ssh_key[0].public_key_openssh) // Removes \n at the end of ssh
 }
-*/
 
 resource "ovh_cloud_project_ssh_key" "default" {
   count        = local.create_ssh_key ? 1 : 0
@@ -61,7 +62,7 @@ resource "openstack_compute_instance_v2" "VMLinux" {
 
   // key_pair     = local.create_ssh_key ? openstack_compute_keypair_v2.default[0].name : var.vm.sshkey
   key_pair        = local.create_ssh_key ? ovh_cloud_project_ssh_key.default[0].name : var.vm.sshkey
-// key_pair = local.create_ssh_key ? one(ovh_cloud_project_ssh_key.default[*].name) : var.vm.sshkey
+  // key_pair        = local.create_ssh_key ? one(openstack_compute_keypair_v2.default[*].name) : var.vm.sshkey  // Refeer to openstack, as we get error 400 when using ovhref
   security_groups = ["default"]
 
   power_state     = var.vm.power_state

@@ -17,8 +17,6 @@ terraform {
       source = "hashicorp/tls"
     }
 
-    
-    // Can be removed
     local = {
       source = "hashicorp/local"
     }
