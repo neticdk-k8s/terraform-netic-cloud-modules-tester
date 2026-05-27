@@ -1,15 +1,14 @@
 output "k8s_cluster_id" {
-  description = "ID på det oprettede Kubernetes cluster (returnerer null hvis deploy = false)"
   value       = one(module.k8s_cluster[*].cluster_id)
+  description = "ID of the K8s cluster. Returns null if deploy = false."
 }
 
 output "k8s_cluster_name" {
-  description = "Navnet på det oprettede Kubernetes cluster"
   value       = one(module.k8s_cluster[*].cluster_name)
+  description = "The name of the K8s cluster. Returns null if deploy = false."
 }
 
-output "k8s_kubeconfig" {
-  description = "Den rå kubeconfig fil til at forbinde til klyngen via kubectl"
-  value       = one(module.k8s_cluster[*].kubeconfig)
-  sensitive   = true # Markeres som sensitive for at skjule certifikater i GitHub logs
+output "k8s_node_pools" {
+  value       = one(module.k8s_cluster[*].node_pool_ids)
+  description = "Map of the created node pools. Returns null if deploy = false."
 }

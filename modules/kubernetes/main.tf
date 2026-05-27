@@ -6,15 +6,19 @@ resource "ovh_cloud_project_kube" "kube_cluster" {
   version      = var.kube_cluster.version
 }
 
-# Create a Node Pool for our Kubernetes cluster
+# Create Node Pools 
 resource "ovh_cloud_project_kube_nodepool" "node_pool" {
+  for_each     = var.kube_node_pools
+
   service_name  = var.ovh_project_id
   kube_id       = ovh_cloud_project_kube.kube_cluster.id
-  name          = var.kube_cluster.name
-  flavor_name   = var.kube_cluster.size
-  desired_nodes = var.kube_cluster.nodes_count
-  min_nodes     = var.kube_cluster.nodes_min
-  max_nodes     = var.kube_cluster.nodes_max
+  
+  # each.key is the name of the pool (fx "frontend" eller "backend")
+  name          = each.key
+  flavor_name   = each.value.size
+  desired_nodes = each.value.nodes_count
+  min_nodes     = each.value.nodes_min
+  max_nodes     = each.value.nodes_max
 
   template {
     metadata {
@@ -22,11 +26,11 @@ resource "ovh_cloud_project_kube_nodepool" "node_pool" {
         managed-by = "terraform"
       }
       finalizers = []
-      labels     = var.kube_cluster.labels
+      labels     = each.value.labels
     }
     spec {
       unschedulable = false
-      taints        = var.kube_cluster.taints
+      taints        = each.value.taints
     }
   }
 }

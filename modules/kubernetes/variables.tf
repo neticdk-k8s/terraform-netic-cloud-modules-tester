@@ -8,21 +8,28 @@ variable "ovh_region" {
   description = "OVH Region (fx GRA11)"
 }
 
+## Kubernetes Managed Cluster instance
 variable "kube_cluster" {
   type = object({
     name            = string
     version         = string
-    size            = string
-    nodes_count     = number
-    nodes_min       = number
-    nodes_max       = number
-    labels          = optional(map(string), {})
     ip_restrictions = optional(list(string), [])
-    
-    taints          = optional(list(object({
+  })
+}
+
+# All the nodepools for the above Cluster
+variable "kube_node_pools" {
+  type = map(object({
+    size        = string
+    nodes_count = number
+    nodes_min   = number
+    nodes_max   = number
+    labels      = optional(map(string), {})
+    taints      = optional(list(object({
       key    = string
       value  = string
       effect = string
-    })), []) 
-  })
+    })), [])
+  }))
+  default = {}
 }
