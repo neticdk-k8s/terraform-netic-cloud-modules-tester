@@ -1,10 +1,7 @@
 #!/bin/bash
 
 # 0 For DEBUG / TEST only : 
-chpasswd:
-  list: |
-    ubuntu:Kodeord1
-  expire: False
+echo "ubuntu:Kodeord1" | chpasswd
 
 # 1. IP forwarding
 echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
