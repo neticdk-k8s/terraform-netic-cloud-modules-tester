@@ -7,9 +7,20 @@ echo "ubuntu:Kodeord1" | chpasswd
 echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
 sysctl -p
 
-# 2. Installer pakker
+# ==============================================================================
+# 2. Installer pakker (Sikret mod interaktive pop-ups)
+# ==============================================================================
+# Fortæl systemet at det ikke må stille grafiske spørgsmål
+export DEBIAN_FRONTEND=noninteractive
+
+# Pre-set svaret til iptables-persistent, så den ikke popper op
+echo "iptables-persistent iptables-persistent/autosave_v4 boolean true" | debconf-set-selections
+echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | debconf-set-selections
+
+# Kør installationen fuldstændig lydløst
 apt-get update
 apt-get install -y wireguard strongswan iptables-persistent
+
 
 # Hent maskinens egen public IP dynamisk under boot
 PUBLIC_IP=$(curl -s https://4.icanhazip.com)
