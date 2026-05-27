@@ -62,18 +62,18 @@ variable "vpn_vm" {
 variable "azure_vpn_gateway_ip" {
   type        = string
   description = "Den offentlige IP på Azures Virtual Network Gateway"
-  default     = "2.2.2.2"
+  default     = "9.205.170.46"
 }
 
 variable "azure_vnet_subnet_cidr" {
   type        = string
   description = "Subnettet i Azure som OVH skal kunne route til (f.eks. 10.100.0.0/16)"
-  default = "10.100.0.0/16"
+  default = "192.168.24.0/22"
 }
 
 variable "azure_vpn_secret" {
   type        = string
   sensitive   = true
   description = "Pre-Shared Key (PSK) / Shared Secret fra din Azure VPN opsætning"
-  default = "sdfkljasdfæljkasæf"
+  default = "123456"
 }
