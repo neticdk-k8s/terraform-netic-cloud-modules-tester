@@ -28,3 +28,13 @@ module "vpnvm" {
 
   depends_on = [module.network]
 }
+
+
+module "testvm" {
+  source         = "../../../../modules/vm"
+  ovh_project_id = var.ovh_project_id
+  
+  vm = var.testvm
+
+  depends_on = [module.network]
+}
