@@ -19,10 +19,10 @@ module "vpnvm" {
   # Vi opdaterer 'user_data' dynamisk med værdier før modulet køres
   vm = merge(var.vpn_vm, {
     user_data = templatefile("${path.module}/userdata.sh.tpl", {
-      ovh_subnet   = var.network.regions[0].subnet
-      azure_ip     = var.azure_vpn_gateway_ip
-      azure_subnet = var.azure_vnet_subnet_cidr
-      azure_psk    = var.azure_vpn_secret
+      ovh_subnet   = var.network.regions[0].subnet # Svarer til: "192.168.10.0/24"
+      azure_ip     = var.azure_vpn_gateway_ip      # Standard Public IP fra Azure VPN GW
+      azure_subnet = var.azure_vnet_subnet_cidr    # Svarer til: "192.168.24.0/22"
+      azure_psk    = var.azure_vpn_secret         # Din Pre-Shared Key
     })
   })
 

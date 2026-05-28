@@ -1,31 +1,36 @@
 #!/bin/bash
 
-# 0 For DEBUG / TEST only : 
+# ==============================================================================
+# VARIABLER (Indsat dynamisk af Terraform templatefile)
+# ==============================================================================
+ovh_subnet="${ovh_subnet}"
+azure_subnet="${azure_subnet}"
+azure_ip="${azure_ip}"
+azure_psk="${azure_psk}"
+
+# For DEBUG / TEST running: 
 echo "ubuntu:Kodeord1" | chpasswd
 
-# 1. IP forwarding
+# 1. IP forwarding (gør maskinen i stand til at agere router)
 echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
 sysctl -p
 
 # ==============================================================================
-# 2. Install packets.   Disable popup
+# 2. INSTALLATION AF PAKKER (Popup deaktiveret)
 # ==============================================================================
 export DEBIAN_FRONTEND=noninteractive
 
-# Pre-set answer for iptables-persistent, so popup is avoided
 echo "iptables-persistent iptables-persistent/autosave_v4 boolean true" | debconf-set-selections
 echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | debconf-set-selections
 
-# silent install
 apt-get update
 apt-get install -y wireguard strongswan iptables-persistent
 
-
-# Get public ip
+# Find denne OVH-maskines eksterne IP-adresse automatisk
 PUBLIC_IP=$(curl -s https://4.icanhazip.com)
 
 # ==============================================================================
-# 3. WIREGUARD CONFIGURATION
+# 3. WIREGUARD KONFIGURATION (VPN til klienter)
 # ==============================================================================
 mkdir -p /etc/wireguard
 cd /etc/wireguard
@@ -45,7 +50,7 @@ systemctl enable wg-quick@wg0
 systemctl start wg-quick@wg0
 
 # ==============================================================================
-# 4. STRONGSWAN CONFIGURATION (Azure)
+# 4. STRONGSWAN KONFIGURATION (Site-to-Site til Azure)
 # ==============================================================================
 cat <<EOF > /etc/ipsec.conf
 config setup
@@ -58,17 +63,17 @@ conn azure-s2s
     type=tunnel
     keyexchange=ikev2
     
-    # Local side
+    # Local side (OVH)
     left=%any
     leftid=$PUBLIC_IP
-    leftsubnet=${ovh_subnet},10.8.0.0/24 
+    leftsubnet=$ovh_subnet,10.8.0.0/24 
     
     # Azure side
-    right=${azure_ip}
-    rightid=${azure_ip}
-    rightsubnet=${azure_subnet}
+    right=$azure_ip
+    rightid=$azure_ip
+    rightsubnet=$azure_subnet
     
-    # De crypto-indstillinger der virkede!
+    # Kryptering der matcher Azure standard-indstillinger
     ike=aes256-sha256-modp2048!
     esp=aes256-sha256!
     
@@ -78,19 +83,22 @@ conn azure-s2s
 EOF
 
 cat <<EOF > /etc/ipsec.secrets
-$PUBLIC_IP ${azure_ip} : PSK "${azure_psk}"
+$PUBLIC_IP $azure_ip : PSK "$azure_psk"
 EOF
 
 systemctl enable strongswan-starter
 systemctl restart strongswan-starter
 
 # ==============================================================================
-# 5. FIREWALL
+# 5. FIREWALL & ROUTING (IPTABLES)
 # ==============================================================================
 iptables -A FORWARD -i wg0 -j ACCEPT
 iptables -A FORWARD -o wg0 -j ACCEPT
 
-# Allow forwarding between azure and Wireguard
-iptables -A FORWARD -s ${azure_subnet} -j ACCEPT
-iptables -A FORWARD -d ${azure_subnet} -j ACCEPT
+iptables -A FORWARD -s $azure_subnet -j ACCEPT
+iptables -A FORWARD -d $azure_subnet -j ACCEPT
+
+# Giver dine WireGuard-klienter internetadgang ud igennem OVH maskinen (ret eth0 hvis nødvendigt)
+iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o eth0 -j MASQUERADE
+
 netfilter-persistent save
