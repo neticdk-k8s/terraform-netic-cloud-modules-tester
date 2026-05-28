@@ -62,7 +62,7 @@ variable "vpn_vm" {
 variable "azure_vpn_gateway_ip" {
   type        = string
   description = "Den offentlige IP på Azures Virtual Network Gateway"
-  default     = "9.205.170.46"
+  default     = "9.205.169.16"
 }
 
 variable "azure_vnet_subnet_cidr" {
