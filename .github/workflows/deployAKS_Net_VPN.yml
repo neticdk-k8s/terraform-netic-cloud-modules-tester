@@ -1,4 +1,5 @@
 name: 'AKS_and_VPN'
+run-name: "AKS_VPN by @${{ github.actor }})"
 
 on:
   workflow_dispatch:

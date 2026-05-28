@@ -1,5 +1,5 @@
 name: Terraform Plan & Deploy Selector
-run-name: "TF: ${{ inputs.action }} på ${{ inputs.environment }} (af @${{ github.actor }})"
+run-name: "TF: ${{ inputs.action }} on ${{ inputs.environment }} (by @${{ github.actor }})"
 
 on:
   # Bruges når du starter workflowet MANUELT inde i GitHub (Dropdown-menuer)
