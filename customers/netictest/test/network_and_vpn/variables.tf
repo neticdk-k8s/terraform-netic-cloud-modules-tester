@@ -70,11 +70,11 @@ variable "testvm" {
     user_data     = optional(string, null) 
   })
   default = {
-    name          = "netic-vpn"
+    name          = "netic-testvm"
     size          = "b2-7"
     image_name    = "Ubuntu 24.04"
     network_names = ["netic-vpn-net"]
-    user_data = "echo 'ubuntu:Kodeord1' | chpasswd"
+    user_data     = "echo 'ubuntu:Kodeord1' | chpasswd"
   }
 }
 
