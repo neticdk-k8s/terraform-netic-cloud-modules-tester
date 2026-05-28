@@ -8,21 +8,20 @@ echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
 sysctl -p
 
 # ==============================================================================
-# 2. Installer pakker (Sikret mod interaktive pop-ups)
+# 2. Install packets.   Disable popup
 # ==============================================================================
-# Fortæl systemet at det ikke må stille grafiske spørgsmål
 export DEBIAN_FRONTEND=noninteractive
 
-# Pre-set svaret til iptables-persistent, så den ikke popper op
+# Pre-set answer for iptables-persistent, so popup is avoided
 echo "iptables-persistent iptables-persistent/autosave_v4 boolean true" | debconf-set-selections
 echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | debconf-set-selections
 
-# Kør installationen fuldstændig lydløst
+# silent install
 apt-get update
 apt-get install -y wireguard strongswan iptables-persistent
 
 
-# Hent maskinens egen public IP dynamisk under boot
+# Get public ip
 PUBLIC_IP=$(curl -s https://4.icanhazip.com)
 
 # ==============================================================================
@@ -51,6 +50,7 @@ systemctl start wg-quick@wg0
 cat <<EOF > /etc/ipsec.conf
 config setup
     charondebug="ike 1, knl 1, cfg 1"
+    uniqueids=yes
 
 conn azure-s2s
     authby=secret
@@ -58,14 +58,17 @@ conn azure-s2s
     type=tunnel
     keyexchange=ikev2
     
+    # Local side
     left=%any
     leftid=$PUBLIC_IP
     leftsubnet=${ovh_subnet},10.8.0.0/24 
     
+    # Azure side
     right=${azure_ip}
     rightid=${azure_ip}
     rightsubnet=${azure_subnet}
     
+    # De crypto-indstillinger der virkede!
     ike=aes256-sha256-modp2048!
     esp=aes256-sha256!
     
@@ -78,6 +81,7 @@ cat <<EOF > /etc/ipsec.secrets
 $PUBLIC_IP ${azure_ip} : PSK "${azure_psk}"
 EOF
 
+systemctl enable strongswan-starter
 systemctl restart strongswan-starter
 
 # ==============================================================================
@@ -85,4 +89,8 @@ systemctl restart strongswan-starter
 # ==============================================================================
 iptables -A FORWARD -i wg0 -j ACCEPT
 iptables -A FORWARD -o wg0 -j ACCEPT
+
+# Allow forwarding between azure and Wireguard
+iptables -A FORWARD -s ${azure_subnet} -j ACCEPT
+iptables -A FORWARD -d ${azure_subnet} -j ACCEPT
 netfilter-persistent save

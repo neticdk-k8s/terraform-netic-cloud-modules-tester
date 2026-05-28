@@ -2,6 +2,7 @@ name: Terraform Plan & Deploy Selector
 run-name: "TF: ${{ inputs.action }} på ${{ inputs.environment }} (af @${{ github.actor }})"
 
 on:
+  # Bruges når du starter workflowet MANUELT inde i GitHub (Dropdown-menuer)
   workflow_dispatch:
     inputs:
       customer:
@@ -10,7 +11,6 @@ on:
         type: choice
         options:
           - netictest
-
       environment:
         description: "Environment"
         required: true
@@ -19,7 +19,6 @@ on:
           - test
           - prod
           - dev
-
       module:
         description: "Infrastructure to deploy"
         required: true
@@ -31,7 +30,6 @@ on:
           - vm
           - storage
           - network_and_vpn
-
       action:
         description: "Plan, Deploy or Destroy"
         required: true
@@ -40,20 +38,24 @@ on:
         options:
           - plan
           - deploy
-          - destroy 
-      debug:
-        description: 'Enable Terraform Debug Log'
+          - destroy
+
+  # Bruges når dette workflow bliver KALDT fra et andet workflow (Genanvendeligt)
+  workflow_call:
+    inputs:
+      customer:
         required: true
-        type: boolean
-        default: false
-
-env:
-  TF_VERSION: "1.8.5"
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-
-  ## Debug info for terraform if needed
-  TF_LOG: ${{ github.event.inputs.debug == 'true' && 'DEBUG' || '' }}
-
+        type: string
+      environment:
+        required: true
+        type: string
+      module:
+        required: true
+        type: string
+      action:
+        required: true
+        type: string
+        default: "plan"
 
 jobs:
   terraform:
