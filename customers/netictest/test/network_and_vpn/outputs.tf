@@ -13,7 +13,7 @@ output "subnet_ids" {
   value       = module.network.subnet_ids
 }
 
-output "ovh_vpn_gateway_public_ip" {
-  description = "Brug denne IP-adresse i din Azure Local Network Gateway"
-  value       = openstack_networking_floatingip_v2.fip.address
+output "vpn_public_ip" {
+  description = "Brug denne offentlige IP i din Azure Local Network Gateway"
+  value       = module.vpnvm.public_ip
 }
