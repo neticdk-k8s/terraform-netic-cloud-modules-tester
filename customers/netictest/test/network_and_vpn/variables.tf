@@ -91,7 +91,7 @@ variable "testvm" {
     name          = "netic-testvm"
     size          = "b2-7"
     image_name    = "Ubuntu 24.04"
-    network_names = ["netic-vpn-net"]
+    network_names = ["netic-vpn-net", "Ext-Net"] // public net nødvendig for at installere pakker
     user_data     = "echo 'ubuntu:Kodeord1' | chpasswd"
   }
 }
