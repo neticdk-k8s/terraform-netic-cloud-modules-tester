@@ -7,8 +7,8 @@
 
 # 1. Definer de faste test-nøgler ét centralt sted i din main.tf (locals)
 locals {
-  vpn_priv    = "wGq30Vf6ZkY9mX1ArB7PjD9uN2mS4vK6tL8xZ0qW3E4="
-  vpn_pub     = "pQx79Wk5mN0vL2tK4vS6mD8uN2jP7ArB9mX1ZkY9mE4="
+  vpn_priv = "wGq30Vf6ZkY9mX1ArB7PjD9uN2mS4vK6tL8xZ0qW3E4="
+  vpn_pub  = "pQx79Wk5mN0vL2tK4vS6mD8uN2jP7ArB9mX1ZkY9mE4="
 
   testvm_priv = "aBC123xyzD456vFRtG789uHJkI012mNObP345qRS6tU="
   testvm_pub  = "xYZ987cbaF654vTRdG321uHJkI012mNObP345qRS6tE4="
@@ -32,11 +32,11 @@ module "vpnvm" {
 
   vm = merge(var.vpn_vm, {
     user_data = templatefile("${path.module}/userdata.sh.tpl", {
-      ovh_subnet        = var.network.regions[0].subnet 
-      azure_ip          = var.azure_vpn_gateway_ip      
-      azure_subnet      = var.azure_vnet_subnet_cidr    
-      azure_psk         = var.azure_vpn_secret          
-      
+      ovh_subnet   = var.network.regions[0].subnet
+      azure_ip     = var.azure_vpn_gateway_ip
+      azure_subnet = var.azure_vnet_subnet_cidr
+      azure_psk    = var.azure_vpn_secret
+
       # 🚀 RETTET HER: Her fødes de statiske WireGuard-nøgler til VPN Gatewayen
       vpn_private_key   = local.vpn_priv
       testvm_public_key = local.testvm_pub
@@ -54,18 +54,18 @@ module "testvm" {
   vm = merge(var.testvm, {
     # Her mapper vi variablerne direkte til dit Bash-script:
     user_data = templatefile("${path.module}/userdata_testvm.sh.tpl", {
-      azure_subnet       = var.azure_vnet_subnet_cidr
-      ovh_subnet        = var.network.regions[0].subnet 
-   
+      azure_subnet = var.azure_vnet_subnet_cidr
+      ovh_subnet   = var.network.regions[0].subnet
+
       # Henter automatisk din VPN-maskines interne IP fra det andet modul:
-      vpn_internal_ip    = module.vpnvm.vm_ip 
-      
+      vpn_internal_ip = module.vpnvm.vm_ip
+
       # Her fødes de to variabler til dit WireGuard interface:
       testvm_private_key = local.testvm_priv
       vpn_public_key     = local.vpn_pub
     })
   })
-  
+
   # Vigtigt: testvm må først bygges når netværk og vpnvm er klar
-  depends_on = [module.network, module.vpnvm] 
+  depends_on = [module.network, module.vpnvm]
 }
