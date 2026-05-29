@@ -1,10 +1,3 @@
-Her er dit fuldstændigt tilrettede userdata.sh.tpl script.
-
-Jeg har bygget den dynamiske detektering af netkort ind i toppen, så scriptet selv finder ud af, om dine kort hedder ens4, ens3, eth0 eller noget fjerde. Samtidig tvinger det Linux til at sende internet- og VPN-trafikken ud af det rigtige offentlige kort, hvilket løser fejlen med de retransmit timeouts, du så i loggen.
-
-Du kan kopiere og erstatte hele indholdet af din fil med dette:
-
-Bash
 #!/bin/bash
 
 # ==============================================================================
