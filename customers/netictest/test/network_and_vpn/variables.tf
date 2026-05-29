@@ -1,18 +1,16 @@
 # Common variables
-variable "ovh_project_id" { type = string }
-variable "ovh_region" { type = string }
-variable "ovh_api_region" { type = string }
+variable "ovh_project_id"   { type = string }
+variable "ovh_region"       { type = string }
+variable "ovh_api_region"   { type = string }
 variable "ovh_project_name" { type = string }
+variable "environment"      { type = string }
+variable "name_prefix"      { type = string }
 
-variable "environment" { type = string }
-variable "name_prefix" { type = string }
+# OpenStack Credentials
+variable "OS_username"      { type = string }
+variable "OS_password"      { type = string }
 
-# OpenStack 
-variable "OS_username" { type = string }
-variable "OS_password" { type = string }
-
-
-## Azure VPN specifikke input (Sættes f.eks. i din terraform.tfvars eller GitHub Secrets)
+## Azure VPN specifikke input
 variable "azure_vpn_gateway_ip" {
   type        = string
   description = "Den offentlige IP på Azures Virtual Network Gateway"
@@ -21,25 +19,22 @@ variable "azure_vpn_gateway_ip" {
 
 variable "azure_vnet_subnet_cidr" {
   type        = string
-  description = "Subnettet i Azure som OVH skal kunne route til (f.eks. 10.100.0.0/16)"
-  default = "192.168.24.0/22"
+  description = "Subnettet i Azure som OVH skal kunne route til"
+  default     = "192.168.24.0/22"
 }
 
 variable "azure_vpn_secret" {
   type        = string
   sensitive   = true
-  description = "Pre-Shared Key (PSK) / Shared Secret fra din Azure VPN opsætning"
-  default = "123456"
+  description = "Pre-Shared Key (PSK) / Shared Secret fra Azure"
+  default     = "123456"
 }
-
-
 
 ## Network Configuration
 variable "network" {
   type = object({
     name = string
     vlan = number
-
     regions = list(object({
       region              = string
       subnet              = string
@@ -48,7 +43,6 @@ variable "network" {
       ip_allocation_stop  = optional(number, 200)
     }))
   })
-
   default = {
     name = "netic-vpn-net"
     vlan = 1901
@@ -61,6 +55,7 @@ variable "network" {
   }
 }
 
+## VPN VM Configuration (Strømlinet og identisk struktur med testvm)
 variable "vpn_vm" {
   type = object({
     name          = string
@@ -70,20 +65,18 @@ variable "vpn_vm" {
     admin_pass    = optional(string, "Password123!")
     network_names = optional(list(string), [])
     power_state   = optional(string, "active")
-    user_data     = optional(string, null) # Udfyldes dynamisk i main.tf
-
-    create_floating_ip       = optional(bool, false)            // See comment in network_names
-    bind_existing_fip        = optional(string, null)           // If using existing FIP, reference this
+    user_data     = optional(string, null)
   })
   default = {
     name          = "netic-vpn"
     size          = "b2-7"
     image_name    = "Ubuntu 24.04"
-    network_names = ["netic-vpn-net", "Ext-Net"]
+    # RETTET: Kun det interne netværk. Offentlig IP håndteres via Floating IP i main.tf
+    network_names = ["netic-vpn-net"] 
   }
 }
 
-
+## Test VM Configuration
 variable "testvm" {
   type = object({
     name          = string
@@ -103,4 +96,3 @@ variable "testvm" {
     user_data     = "echo 'ubuntu:Kodeord1' | chpasswd"
   }
 }
-

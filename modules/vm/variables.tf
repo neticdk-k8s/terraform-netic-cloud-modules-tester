@@ -5,21 +5,17 @@ variable "ovh_project_id" {
 
 variable "vm" {
   type = object({
-    name                     = string
-    size                     = string
-    image_name               = string
-    sshkey                   = optional(string, null)           // For Linux images.  If not provided, one is generated
-    admin_pass               = optional(string,"Password123!")  // For Windows images
-    network_names            = optional(list(string), [])       // If Ext-Net is in list, a Public IP is assigned on a public network
-                                                                // If Floating_Ip se selected, a NAT is created towards the Private IP
-                                                                // !!! You CANT have both !!!
-
-    power_state              = optional(string, "active")       // "shutoff", "paused", "shelved_offloaded"
-    user_data                = optional(string, null)           // For scripts
+    name                  = string
+    size                  = string
+    image_name            = string
+    sshkey                = optional(string, null)
+    admin_pass            = optional(string, "Password123!")
+    network_names         = list(string)               # F.eks. ["reg-vlan-10"] eller ["Ext-Net"]
+    power_state           = optional(string, "active") # "active" eller "shutoff"
+    user_data             = optional(string, null)     # Bash scripts / cloud-init
     
-    create_floating_ip       = optional(bool, false)            // See comment in network_names
-    existing_fip             = optional(string, null)           // If using existing FIP, reference this
-    
+    # Det generiske netkorts-tweak (IP Forwarding / Anti-spoofing bypass)
+    allowed_address_pairs = optional(list(string), []) 
   })
-  description = "Combined configuration object for the virtual machine"
+  description = "Generisk konfigurationsobjekt til udrulning af en VM"
 }

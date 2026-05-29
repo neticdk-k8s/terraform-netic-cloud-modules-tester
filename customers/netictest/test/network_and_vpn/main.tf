@@ -5,11 +5,12 @@
 // https://docs.ovhcloud.com/en/guides/network/ovhcloud-connect/occ-provider-control-panel
 
 
-
+# 1. Opretter din faste offentlige Floating IP i OVH-roden
 resource "openstack_networking_floatingip_v2" "fip" {
-  pool  = "Ext-Net"
+  pool = "Ext-Net"
 }
 
+# 2. Netværksmodul (vRack, subnets osv.)
 module "network" {
   source         = "../../../../modules/network"
   ovh_project_id = var.ovh_project_id
@@ -18,28 +19,35 @@ module "network" {
   regions        = var.network.regions
 }
 
+# 3. Din VPN VM (Konfigureres som Gateway vha. allowed_address_pairs)
 module "vpnvm" {
   source         = "../../../../modules/vm"
   ovh_project_id = var.ovh_project_id
 
-  # Vi opdaterer 'user_data' dynamisk med værdier før modulet køres
+  # Vi merger dynamic userdata OG IP-forwarding (allowed_address_pairs) ind i objektet
   vm = merge(var.vpn_vm, {
-    # Fortæl modulet at det skal bruge den IP, vi lige har oprettet herude i roden
-    bind_existing_fip = openstack_networking_floatingip_v2.fip.address
+    
+    # DETTE DEAKTIVERER PORT SECURITY FOR AZURE-TRAFIK INDE I MODULET:
+    allowed_address_pairs = [var.azure_vnet_subnet_cidr]
 
     user_data = templatefile("${path.module}/userdata.sh.tpl", {
-      ovh_subnet   = var.network.regions[0].subnet # Svarer til: "192.168.10.0/24"
-      azure_ip     = var.azure_vpn_gateway_ip      # Standard Public IP fra Azure VPN GW
-      azure_subnet = var.azure_vnet_subnet_cidr    # Svarer til: "192.168.24.0/22"
-      azure_psk    = var.azure_vpn_secret          # Din Pre-Shared Key
-      azure_psk    = var.azure_vpn_secret          # Din Pre-Shared Key
+      ovh_subnet   = var.network.regions[0].subnet 
+      azure_ip     = var.azure_vpn_gateway_ip      
+      azure_subnet = var.azure_vnet_subnet_cidr    
+      azure_psk    = var.azure_vpn_secret          
     })
   })
 
   depends_on = [module.network]
 }
 
+# 4. Binder din Floating IP direkte til det netkort, som dit VM-modul har oprettet
+resource "openstack_networking_floatingip_associate_v2" "fip_assoc" {
+  floating_ip = openstack_networking_floatingip_v2.fip.address
+  port_id     = module.vpnvm.primary_port_id
+}
 
+# 5. Din helt almindelige test-VM (Helt standard adfærd uden netværks-tweaks)
 module "testvm" {
   source         = "../../../../modules/vm"
   ovh_project_id = var.ovh_project_id

@@ -74,17 +74,27 @@ conn azure-s2s
     rightsubnet=$azure_subnet
     
     # Kryptering der matcher Azure standard-indstillinger
+    #   Phase 1: Encryption=AES256, Integrity=SHA256, DH Group=14 (modp2048)
     ike=aes256-sha256-modp2048!
+    
+    # Phase 2: IPsec Encryption=AES256, IPsec Integrity=SHA256, PFS=None
     esp=aes256-sha256!
     
+    # --- LIFETIMES & TIMERS ---
+    keylife=27000s
+    ikelifetime=27000s
+    
+    # Dead Peer Detection (Matcher din DPD timeout på 45 sekunder)
+    dpddelay=15s
+    dpdtimeout=45s
     dpdaction=restart
-    dpddelay=30s
-    dpdtimeout=120s
 EOF
 
+# 5. Konfigurer din Pre-Shared Key / IPsec Nøgle (/etc/ipsec.secrets)
 cat <<EOF > /etc/ipsec.secrets
-$PUBLIC_IP $azure_ip : PSK "$azure_psk"
+%any ${azure_ip} : PSK "${azure_psk}"
 EOF
+
 
 systemctl enable strongswan-starter
 systemctl restart strongswan-starter
