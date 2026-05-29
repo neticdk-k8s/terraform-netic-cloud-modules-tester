@@ -7,6 +7,11 @@ locals {
 
   # Generate a new SSH key ONLY if no existing key is provided AND it is NOT a Windows VM
   create_ssh_key = var.vm.sshkey == null && !local.is_windows
+  
+  ## For Floating IP
+  # Get id of relevant VM created
+   instance_id = local.is_windows ? one(openstack_compute_instance_v2.VMWindows[*].id) : one(openstack_compute_instance_v2.VMLinux[*].id)
+   has_floating_ip = var.vm.create_floating_ip || var.vm.bind_existing_fip != null
 }
 
 
@@ -104,4 +109,21 @@ resource "openstack_compute_instance_v2" "VMWindows" {
   lifecycle {
     ignore_changes = [image_name]
   }
+}
+
+
+######################################
+###      Floating IP Sektion       ###
+######################################
+
+resource "openstack_networking_floatingip_v2" "fip" {
+   count = var.vm.create_floating_ip ? 1 : 0
+   pool  = "Ext-Net" 
+}
+
+resource "openstack_compute_floatingip_associate_v2" "fip_assoc" {
+  count       = local.has_floating_ip ? 1 : 0
+  instance_id = local.instance_id
+
+  floating_ip = var.vm.bind_existing_fip != null ? var.vm.bind_existing_fip : openstack_networking_floatingip_v2.fip[0].address
 }
