@@ -25,7 +25,7 @@ module "vpnvm" {
   # Vi opdaterer 'user_data' dynamisk med værdier før modulet køres
   vm = merge(var.vpn_vm, {
     # Fortæl modulet at det skal bruge den IP, vi lige har oprettet herude i roden
-    bind_existing_fip = openstack_networking_floatingip_v2.fip[0].address
+    bind_existing_fip = openstack_networking_floatingip_v2.fip.address
 
     user_data = templatefile("${path.module}/userdata.sh.tpl", {
       ovh_subnet   = var.network.regions[0].subnet # Svarer til: "192.168.10.0/24"
