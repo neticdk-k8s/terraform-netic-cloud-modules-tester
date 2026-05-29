@@ -71,8 +71,7 @@ variable "vpn_vm" {
     name          = "netic-vpn"
     size          = "b2-7"
     image_name    = "Ubuntu 24.04"
-    # RETTET: Kun det interne netværk. Offentlig IP håndteres via Floating IP i main.tf
-    network_names = ["netic-vpn-net"] 
+    network_names = ["netic-vpn-net", "Ext-Net"] 
   }
 }
 

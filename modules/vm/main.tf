@@ -26,10 +26,11 @@ resource "ovh_cloud_project_ssh_key" "default" {
   public_key   = trimspace(tls_private_key.ssh_key[0].public_key_openssh)
 }
 
+
 ######################################
 ###    Eksplicitte Netkort         ###
 ######################################
-
+/*
 # Trækker IDs ud på de netværksnavne, der sendes med ind
 data "openstack_networking_network_v2" "selected_nets" {
   for_each = toset(var.vm.network_names)
@@ -51,6 +52,8 @@ resource "openstack_networking_port_v2" "vm_ports" {
     }
   }
 }
+*/
+
 
 ######################################
 ###          Generate VMs          ###
@@ -67,11 +70,16 @@ resource "openstack_compute_instance_v2" "VMLinux" {
   power_state     = var.vm.power_state
   user_data       = var.vm.user_data
   
-  # RETTET: Bruger nu de eksplicitte netkort (ports) i stedet for navne
-  dynamic "network" {
+  /* dynamic "network" {
     for_each = resource.openstack_networking_port_v2.vm_ports
     content {
       port = network.value.id
+    }
+  }*/
+  dynamic "network" {
+    for_each = var.vm.network_names
+    content {
+      name = network.value
     }
   }
 
@@ -91,11 +99,10 @@ resource "openstack_compute_instance_v2" "VMWindows" {
   security_groups = ["default"]
   power_state     = var.vm.power_state
   
-  # RETTET: Bruger nu de eksplicitte netkort (ports) i stedet for navne
   dynamic "network" {
-    for_each = resource.openstack_networking_port_v2.vm_ports
+    for_each = var.vm.network_names
     content {
-      port = network.value.id
+      name = network.value
     }
   }
 
