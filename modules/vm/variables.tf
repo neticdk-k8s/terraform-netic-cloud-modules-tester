@@ -18,7 +18,8 @@ variable "vm" {
     user_data                = optional(string, null)           // For scripts
     
     create_floating_ip       = optional(bool, false)            // See comment in network_names
-    bind_existing_fip        = optional(string, null)           // If using existing FIP, reference this
+    existing_fip             = optional(string, null)           // If using existing FIP, reference this
+    
   })
   description = "Combined configuration object for the virtual machine"
 }

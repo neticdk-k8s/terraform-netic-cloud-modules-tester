@@ -11,7 +11,8 @@ locals {
   ## For Floating IP
   # Get id of relevant VM created
    instance_id = local.is_windows ? one(openstack_compute_instance_v2.VMWindows[*].id) : one(openstack_compute_instance_v2.VMLinux[*].id)
-   has_floating_ip = var.vm.create_floating_ip || var.vm.bind_existing_fip != null
+   has_floating_ip = var.vm.create_floating_ip || var.vm.existing_fip != null
+
 }
 
 
@@ -116,18 +117,26 @@ resource "openstack_compute_instance_v2" "VMWindows" {
 ###      Floating IP Sektion       ###
 ######################################
 
+# Opretter KUN en IP, hvis modulet selv skal stå for det
 resource "openstack_networking_floatingip_v2" "fip" {
-   count = var.vm.create_floating_ip ? 1 : 0
-   pool  = "Ext-Net" 
+  count = var.vm.create_floating_ip ? 1 : 0
+  pool  = "Ext-Net" 
 }
 
+# Slår netværksporten op på din VM
 data "openstack_networking_port_v2" "vm_port" {
   count     = local.has_floating_ip ? 1 : 0
   device_id = local.instance_id
 }
+
+# Binder IP'en (Uanset om den er ny eller eksisterende)
 resource "openstack_networking_floatingip_associate_v2" "fip_assoc" {
   count       = local.has_floating_ip ? 1 : 0
   port_id     = data.openstack_networking_port_v2.vm_port[0].id
+  floating_ip = var.vm.existing_fip != null ? var.vm.existing_fip : openstack_networking_floatingip_v2.fip[0].address
+}
 
-  floating_ip = var.vm.bind_existing_fip != null ? var.vm.bind_existing_fip : openstack_networking_floatingip_v2.fip[0].address
+# VIGTIGT: Vi scannner port-id'et ud af modulet, så roden kan se det (vises i næste skridt)
+output "primary_port_id" {
+  value = local.has_floating_ip ? data.openstack_networking_port_v2.vm_port[0].id : null
 }
