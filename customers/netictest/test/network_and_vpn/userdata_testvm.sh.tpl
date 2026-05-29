@@ -3,10 +3,8 @@
 # ==============================================================================
 # VARIABLER (Indsat dynamisk af Terraform templatefile)
 # ==============================================================================
-ovh_subnet="${ovh_subnet}"
 azure_subnet="${azure_subnet}"
-azure_ip="${azure_ip}"
-azure_psk="${azure_psk}"
+
 
 # For DEBUG / TEST logind:
 echo "ubuntu:Kodeord1" | chpasswd

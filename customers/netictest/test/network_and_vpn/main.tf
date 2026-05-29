@@ -55,7 +55,7 @@ module "testvm" {
     # Her mapper vi variablerne direkte til dit Bash-script:
     user_data = templatefile("${path.module}/userdata_testvm.sh.tpl", {
       azure_subnet       = var.azure_vnet_subnet_cidr
-      
+   
       # Henter automatisk din VPN-maskines interne IP fra det andet modul:
       vpn_internal_ip    = module.vpnvm.vm_ip 
       
