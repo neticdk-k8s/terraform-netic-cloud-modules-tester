@@ -121,9 +121,13 @@ resource "openstack_networking_floatingip_v2" "fip" {
    pool  = "Ext-Net" 
 }
 
-resource "openstack_compute_floatingip_associate_v2" "fip_assoc" {
+data "openstack_networking_port_v2" "vm_port" {
+  count     = local.has_floating_ip ? 1 : 0
+  device_id = local.instance_id
+}
+resource "openstack_networking_floatingip_associate_v2" "fip_assoc" {
   count       = local.has_floating_ip ? 1 : 0
-  instance_id = local.instance_id
+  port_id     = data.openstack_networking_port_v2.vm_port[0].id
 
   floating_ip = var.vm.bind_existing_fip != null ? var.vm.bind_existing_fip : openstack_networking_floatingip_v2.fip[0].address
 }

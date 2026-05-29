@@ -7,7 +7,6 @@
 
 
 resource "openstack_networking_floatingip_v2" "fip" {
-  count = var.vm.create_floating_ip ? 1 : 0
   pool  = "Ext-Net"
 }
 
