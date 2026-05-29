@@ -80,9 +80,6 @@ variable "vpn_vm" {
     size          = "b2-7"
     image_name    = "Ubuntu 24.04"
     network_names = ["netic-vpn-net", "Ext-Net"]
-
-    create_floating_ip       = optional(bool, false)            // See comment in network_names
-    bind_existing_fip        = optional(string, null)           // If using existing FIP, reference this
   }
 }
 
