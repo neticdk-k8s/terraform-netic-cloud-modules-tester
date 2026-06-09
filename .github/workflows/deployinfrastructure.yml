@@ -1,18 +1,23 @@
 name: Terraform Plan & Deploy
-run-name: "TF: ${{ inputs.action }} — ${{ inputs.template }} (by @${{ github.actor }})"
+run-name: "TF: ${{ inputs.action }} — ${{ inputs.template }}_${{ inputs.cloud }} (by @${{ github.actor }})"
 
 on:
   workflow_dispatch:
     inputs:
       template:
-        description: "Template to deploy"
+        description: "Template"
         required: true
         type: choice
         options:
-          - Test_Net_OVH
-          - Test_Net_Azure
-          - Test_K8S_OVH
-          - Test_K8S_Azure
+          - Test_Net
+          - Test_K8S
+      cloud:
+        description: "Cloud"
+        required: true
+        type: choice
+        options:
+          - OVH
+          - Azure
       action:
         description: "Action"
         required: true
@@ -25,10 +30,11 @@ on:
 
 jobs:
   terraform:
-    name: "${{ inputs.action }} — ${{ inputs.template }}"
+    name: "${{ inputs.action }} — ${{ inputs.template }}_${{ inputs.cloud }}"
     runs-on: ubuntu-latest
 
     env:
+      TEMPLATE_DIR: templates/test/${{ inputs.template }}_${{ inputs.cloud }}
       # OVH provider
       OVH_ENDPOINT:           ${{ vars.OVH_ENDPOINT }}
       OVH_APPLICATION_KEY:    ${{ secrets.OVH_APPLICATION_KEY }}
@@ -40,7 +46,7 @@ jobs:
       # OpenStack provider
       OS_USERNAME:            ${{ secrets.OS_USERNAME }}
       OS_PASSWORD:            ${{ secrets.OS_PASSWORD }}
-      # GitOps / Flux (Test_K8S_OVH) — ignored by Terraform if variable not declared
+      # GitOps / Flux (Test_K8S) — ignored by Terraform if variable not declared
       TF_VAR_netic_git_username: ${{ secrets.TF_VAR_NETIC_GIT_USERNAME }}
       TF_VAR_netic_git_token:    ${{ secrets.TF_VAR_NETIC_GIT_TOKEN }}
       TF_VAR_gitops_ssh_key:     ${{ secrets.TF_VAR_GITOPS_SSH_KEY }}
@@ -61,7 +67,7 @@ jobs:
       - name: Guardrail — block destroy without confirmation
         if: ${{ inputs.action == 'destroy' }}
         run: |
-          echo "::warning::Running DESTROY on ${{ inputs.template }}"
+          echo "::warning::Running DESTROY on ${{ inputs.template }}_${{ inputs.cloud }}"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4
@@ -69,52 +75,51 @@ jobs:
       - name: Copy shared Terraform files into template
         run: |
           SHARED="templates/test"
-          TARGET="templates/test/${{ inputs.template }}"
-          cp "$SHARED/providers.tf"       "$TARGET/providers.tf"
-          cp "$SHARED/backend.tf"         "$TARGET/backend.tf"
-          cp "$SHARED/common.auto.tfvars" "$TARGET/common.auto.tfvars"
+          cp "$SHARED/providers.tf"       "$TEMPLATE_DIR/providers.tf"
+          cp "$SHARED/backend.tf"         "$TEMPLATE_DIR/backend.tf"
+          cp "$SHARED/common.auto.tfvars" "$TEMPLATE_DIR/common.auto.tfvars"
 
       - name: Terraform Init
-        working-directory: templates/test/${{ inputs.template }}
+        working-directory: ${{ env.TEMPLATE_DIR }}
         run: |
-          terraform init -backend-config="key=templates/${{ inputs.template }}/terraform.tfstate"
+          terraform init -backend-config="key=$TEMPLATE_DIR/terraform.tfstate"
 
       - name: Terraform Validate
-        working-directory: templates/test/${{ inputs.template }}
+        working-directory: ${{ env.TEMPLATE_DIR }}
         run: terraform validate
 
       - name: Terraform Plan
         if: ${{ inputs.action != 'destroy' }}
-        working-directory: templates/test/${{ inputs.template }}
+        working-directory: ${{ env.TEMPLATE_DIR }}
         run: terraform plan -out=tfplan
 
       - name: Upload Plan Artifact
         if: ${{ inputs.action != 'destroy' }}
         uses: actions/upload-artifact@v4
         with:
-          name: tfplan-${{ inputs.template }}
-          path: templates/test/${{ inputs.template }}/tfplan
+          name: tfplan-${{ inputs.template }}_${{ inputs.cloud }}
+          path: ${{ env.TEMPLATE_DIR }}/tfplan
 
       - name: Terraform Apply
         if: ${{ inputs.action == 'deploy' }}
-        working-directory: templates/test/${{ inputs.template }}
+        working-directory: ${{ env.TEMPLATE_DIR }}
         run: terraform apply -auto-approve tfplan
 
       - name: Save kubeconfig
-        if: ${{ inputs.action == 'deploy' && startsWith(inputs.template, 'Test_K8S') }}
-        working-directory: templates/test/${{ inputs.template }}
+        if: ${{ inputs.action == 'deploy' && inputs.template == 'Test_K8S' }}
+        working-directory: ${{ env.TEMPLATE_DIR }}
         run: terraform output -raw kubeconfig > kubeconfig.yaml
 
-        # kubeconfig is not stored in repo for security reasons, but we want to keep it available as an artifact for a short time for testing purposes
+      # kubeconfig gemmes ikke i repo af sikkerhedshensyn — kun tilgængelig som artifact i kort tid
       - name: Upload kubeconfig
-        if: ${{ inputs.action == 'deploy' && startsWith(inputs.template, 'Test_K8S') }}
+        if: ${{ inputs.action == 'deploy' && inputs.template == 'Test_K8S' }}
         uses: actions/upload-artifact@v4
         with:
-          name: kubeconfig-${{ inputs.template }}
-          path: templates/test/${{ inputs.template }}/kubeconfig.yaml
+          name: kubeconfig-${{ inputs.template }}_${{ inputs.cloud }}
+          path: ${{ env.TEMPLATE_DIR }}/kubeconfig.yaml
           retention-days: 1
 
       - name: Terraform Destroy
         if: ${{ inputs.action == 'destroy' }}
-        working-directory: templates/test/${{ inputs.template }}
+        working-directory: ${{ env.TEMPLATE_DIR }}
         run: terraform destroy -auto-approve
