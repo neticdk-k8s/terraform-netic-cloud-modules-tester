@@ -43,7 +43,7 @@ variable "cloud_settings" {
     region = "denmarkeast"
     azure = {
       subscription_id = "9cbb71c9-7f62-4277-a708-f89d1f020134"
-      resource_group  = "rg-netic-test"
+      resource_group  = "rg-tbr-test"
       dns_prefix      = "netictest"
     }
     network_id = null
