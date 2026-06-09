@@ -98,6 +98,20 @@ jobs:
         working-directory: templates/test/${{ inputs.template }}
         run: terraform apply -auto-approve tfplan
 
+      - name: Save kubeconfig
+        if: ${{ inputs.action == 'deploy' && startsWith(inputs.template, 'Test_K8S') }}
+        working-directory: templates/test/${{ inputs.template }}
+        run: terraform output -raw kubeconfig > kubeconfig.yaml
+
+        # kubeconfig is not stored in repo for security reasons, but we want to keep it available as an artifact for a short time for testing purposes
+      - name: Upload kubeconfig
+        if: ${{ inputs.action == 'deploy' && startsWith(inputs.template, 'Test_K8S') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: kubeconfig-${{ inputs.template }}
+          path: templates/test/${{ inputs.template }}/kubeconfig.yaml
+          retention-days: 1
+
       - name: Terraform Destroy
         if: ${{ inputs.action == 'destroy' }}
         working-directory: templates/test/${{ inputs.template }}
