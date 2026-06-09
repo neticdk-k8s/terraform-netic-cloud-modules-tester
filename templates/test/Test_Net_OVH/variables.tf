@@ -1,0 +1,51 @@
+variable "ovh_api_region" {
+  type        = string
+  description = "OVH API endpoint region (e.g. 'ovh-eu', 'ovh-ca')"
+  default     = "ovh-ca"
+}
+
+variable "cloud_settings" {
+  type = object({
+    region = string
+    ovh = optional(object({
+      project_id = string
+    }), null)
+  })
+  description = "OVH project and region"
+  default = {
+    region = "GRA9"
+    ovh = {
+      project_id = "67241ca1d8b349ce9f6fefb72348bad2"
+    }
+  }
+}
+
+variable "network_config" {
+  type = object({
+    name    = optional(string, "test-private-net")
+    vlan_id = number
+    regions = list(object({
+      region              = string
+      subnet              = string
+      dhcp                = optional(bool, true)
+      no_gateway          = optional(bool, false)
+      ip_allocation_start = optional(number, 10)
+      ip_allocation_stop  = optional(number, 200)
+    }))
+  })
+  description = "OVH private network (vRack) configuration"
+  default = {
+    name    = "test-private-net2"
+    vlan_id = 320
+    regions = [
+      {
+        region              = "GRA9"
+        subnet              = "10.0.10.0/24"
+        dhcp                = true
+        no_gateway          = false
+        ip_allocation_start = 10
+        ip_allocation_stop  = 200
+      }
+    ]
+  }
+}

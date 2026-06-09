@@ -1,5 +1,8 @@
-# Do not move secret script to github
-**/githubSecrets.sh
+# Scripts folder — local utility scripts, not for version control
+templates/scripts/
+
+# Local backend credentials — never commit
+backend.local.tfvars
 
 # MACOS
 .DS_Store

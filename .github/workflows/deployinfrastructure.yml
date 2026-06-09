@@ -1,37 +1,18 @@
-name: Terraform Plan & Deploy Selector
-run-name: "TF: ${{ inputs.action }} on ${{ inputs.environment }} (by @${{ github.actor }})"
+name: Terraform Plan & Deploy
+run-name: "TF: ${{ inputs.action }} — ${{ inputs.template }} (by @${{ github.actor }})"
 
 on:
-  # Bruges når du starter workflowet MANUELT inde i GitHub (Dropdown-menuer)
   workflow_dispatch:
     inputs:
-      customer:
-        description: "Customer name"
+      template:
+        description: "Template to deploy"
         required: true
         type: choice
         options:
-          - netictest
-      environment:
-        description: "Environment"
-        required: true
-        type: choice
-        options:
-          - test
-          - prod
-          - dev
-      module:
-        description: "Infrastructure to deploy"
-        required: true
-        type: choice
-        options:
-          - network
-          - container_registry
-          - managed_kubernetes
-          - vm
-          - storage
-          - network_and_vpn
+          - Test_Net_OVH
+          - Test_K8S_OVH
       action:
-        description: "Plan, Deploy or Destroy"
+        description: "Action"
         required: true
         type: choice
         default: "plan"
@@ -40,40 +21,27 @@ on:
           - deploy
           - destroy
 
-  # Bruges når dette workflow bliver KALDT fra et andet workflow (Genanvendeligt)
-  workflow_call:
-    inputs:
-      customer:
-        required: true
-        type: string
-      environment:
-        required: true
-        type: string
-      module:
-        required: true
-        type: string
-      action:
-        required: true
-        type: string
-        default: "plan"
-
 jobs:
   terraform:
-    name: "Terraform: ${{ github.event.inputs.customer }} - ${{ github.event.inputs.environment }} - ${{ github.event.inputs.module }} (${{ github.event.inputs.action }})"
+    name: "${{ inputs.action }} — ${{ inputs.template }}"
     runs-on: ubuntu-latest
 
     env:
-      OVH_ENDPOINT: ${{ vars.OVH_ENDPOINT }}
-      OVH_APPLICATION_KEY: ${{ secrets.OVH_APPLICATION_KEY }}
+      # OVH provider
+      OVH_ENDPOINT:           ${{ vars.OVH_ENDPOINT }}
+      OVH_APPLICATION_KEY:    ${{ secrets.OVH_APPLICATION_KEY }}
       OVH_APPLICATION_SECRET: ${{ secrets.OVH_APPLICATION_SECRET }}
-      OVH_CONSUMER_KEY: ${{ secrets.OVH_CONSUMER_KEY }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      ## OpenStack values.  Not working with env variables, but this step sets variables in terraform directly
-      TF_VAR_OS_username: ${{ secrets.OS_USERNAME }}
-      TF_VAR_OS_password: ${{ secrets.OS_PASSWORD }}
-
+      OVH_CONSUMER_KEY:       ${{ secrets.OVH_CONSUMER_KEY }}
+      # S3 state backend
+      AWS_ACCESS_KEY_ID:      ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      # OpenStack provider
+      OS_USERNAME:            ${{ secrets.OS_USERNAME }}
+      OS_PASSWORD:            ${{ secrets.OS_PASSWORD }}
+      # GitOps / Flux (Test_K8S_OVH) — ignored by Terraform if variable not declared
+      TF_VAR_netic_git_username: ${{ secrets.TF_VAR_NETIC_GIT_USERNAME }}
+      TF_VAR_netic_git_token:    ${{ secrets.TF_VAR_NETIC_GIT_TOKEN }}
+      TF_VAR_gitops_ssh_key:     ${{ secrets.TF_VAR_GITOPS_SSH_KEY }}
 
     defaults:
       run:
@@ -83,92 +51,49 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Guardrail - Block Prod Destroy
-        if: ${{ github.event.inputs.action == 'destroy' && github.event.inputs.environment == 'prod' }}
+      - name: Guardrail — block destroy without confirmation
+        if: ${{ inputs.action == 'destroy' }}
         run: |
-          echo "::error::DESTROY IS NOT ALLOWED ON PRODUCTION ENVIRONMENTS!"
-          exit 1
+          echo "::warning::Running DESTROY on ${{ inputs.template }}"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4
-        with:
-          terraform_version: ${{ env.TF_VERSION }}
 
-      - name: Set Terraform directory
-        id: tfdir
+      - name: Copy shared Terraform files into template
         run: |
-          TF_DIR="customers/${{ github.event.inputs.customer }}/${{ github.event.inputs.environment }}/${{ github.event.inputs.module }}"
+          SHARED="templates/test"
+          TARGET="templates/test/${{ inputs.template }}"
+          cp "$SHARED/providers.tf"       "$TARGET/providers.tf"
+          cp "$SHARED/backend.tf"         "$TARGET/backend.tf"
+          cp "$SHARED/common.auto.tfvars" "$TARGET/common.auto.tfvars"
 
-          if [ ! -d "$TF_DIR" ]; then
-            echo "Directory not found: $TF_DIR"
-            exit 1
-          fi
-
-          echo "dir=$TF_DIR" >> $GITHUB_OUTPUT
-
-      - name: Verify shared Terraform files exist
-        run: |
-          SHARED_DIR="customers/${{ github.event.inputs.customer }}/${{ github.event.inputs.environment }}"
-          
-          if [ ! -f "$SHARED_DIR/providers.tf" ]; then
-            echo "Missing shared provider file: $SHARED_DIR/providers.tf"
-            exit 1
-          fi
-
-          if [ ! -f "$SHARED_DIR/backend.tf" ]; then
-            echo "Missing shared backend file: $SHARED_DIR/backend.tf"
-            exit 1
-          fi
-
-          if [ ! -f "$SHARED_DIR/common.auto.tfvars" ]; then
-            echo "Missing shared variables file: $SHARED_DIR/common.auto.tfvars"
-            exit 1
-          fi
-
-      - name: Copy shared Terraform configuration
-        run: |
-          SHARED_DIR="customers/${{ github.event.inputs.customer }}/${{ github.event.inputs.environment }}"
-          TARGET_DIR="${{ steps.tfdir.outputs.dir }}"
-          
-          cp "$SHARED_DIR/providers.tf" "$TARGET_DIR/providers.tf"
-          cp "$SHARED_DIR/backend.tf" "$TARGET_DIR/backend.tf"
-          cp "$SHARED_DIR/common.auto.tfvars" "$TARGET_DIR/common.auto.tfvars"
- 
       - name: Terraform Init
-        working-directory: ${{ steps.tfdir.outputs.dir }}
+        working-directory: templates/test/${{ inputs.template }}
         run: |
-          STATE_KEY="customers/${{ github.event.inputs.customer }}/${{ github.event.inputs.environment }}/${{ github.event.inputs.module }}/terraform.tfstate"
-          echo "Dynamically assigning state storage path to: $STATE_KEY"
-          terraform init -backend-config="key=$STATE_KEY"
+          terraform init -backend-config="key=templates/${{ inputs.template }}/terraform.tfstate"
 
       - name: Terraform Validate
-        working-directory: ${{ steps.tfdir.outputs.dir }}
+        working-directory: templates/test/${{ inputs.template }}
         run: terraform validate
 
       - name: Terraform Plan
-        if: ${{ github.event.inputs.action != 'destroy' }}
-        working-directory: ${{ steps.tfdir.outputs.dir }}
+        if: ${{ inputs.action != 'destroy' }}
+        working-directory: templates/test/${{ inputs.template }}
         run: terraform plan -out=tfplan
 
-      #- name: Terraform Destroy Plan
-      #  if: ${{ github.event.inputs.action == 'destroy' }}
-      #  working-directory: ${{ steps.tfdir.outputs.dir }}
-      #  run: terraform plan -destroy
- 
       - name: Upload Plan Artifact
-        if: ${{ github.event.inputs.action != 'destroy' }}
-        uses: actions/upload-artifact@v6
+        if: ${{ inputs.action != 'destroy' }}
+        uses: actions/upload-artifact@v4
         with:
-          name: tfplan-${{ github.event.inputs.customer }}-${{ github.event.inputs.environment }}-${{ github.event.inputs.module }}
-          path: ${{ steps.tfdir.outputs.dir }}/tfplan
+          name: tfplan-${{ inputs.template }}
+          path: templates/test/${{ inputs.template }}/tfplan
 
-      - name: Terraform Apply (Deploy)
-        if: ${{ github.event.inputs.action == 'deploy' }}
-        working-directory: ${{ steps.tfdir.outputs.dir }}
+      - name: Terraform Apply
+        if: ${{ inputs.action == 'deploy' }}
+        working-directory: templates/test/${{ inputs.template }}
         run: terraform apply -auto-approve tfplan
 
-      # Must specify common.auto.tfvars, otherwise os_username and os_password is unknowm for OpenStack provider
-      - name: Terraform Destroy (Execute)
-        if: ${{ github.event.inputs.action == 'destroy' }}
-        working-directory: ${{ steps.tfdir.outputs.dir }}
-        run: terraform destroy -auto-approve -var-file="../common.auto.tfvars"
+      - name: Terraform Destroy
+        if: ${{ inputs.action == 'destroy' }}
+        working-directory: templates/test/${{ inputs.template }}
+        run: terraform destroy -auto-approve
