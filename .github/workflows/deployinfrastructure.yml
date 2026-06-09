@@ -42,6 +42,11 @@ jobs:
       TF_VAR_netic_git_username: ${{ secrets.TF_VAR_NETIC_GIT_USERNAME }}
       TF_VAR_netic_git_token:    ${{ secrets.TF_VAR_NETIC_GIT_TOKEN }}
       TF_VAR_gitops_ssh_key:     ${{ secrets.TF_VAR_GITOPS_SSH_KEY }}
+      # Azure provider — required by module wrappers even on OVH deployments
+      ARM_CLIENT_ID:       ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_CLIENT_SECRET:   ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID:       ${{ vars.AZURE_TENANT_ID }}
 
     defaults:
       run:
