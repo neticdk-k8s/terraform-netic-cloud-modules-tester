@@ -10,7 +10,9 @@ on:
         type: choice
         options:
           - Test_Net_OVH
+          - Test_Net_Azure
           - Test_K8S_OVH
+          - Test_K8S_Azure
       action:
         description: "Action"
         required: true
