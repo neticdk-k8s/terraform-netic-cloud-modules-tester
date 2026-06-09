@@ -206,7 +206,9 @@ variable "cloud_settings" {
       project_id = "67241ca1d8b349ce9f6fefb72348bad2"
     }
     network_id = null
-    ip_restrictions = [
+    ip_restrictions = []
+    /*  The above does not work from github.  
+        private runner with static IPs and allowlist is required.
       "77.243.59.220/32",
       "185.29.76.1/32",
       "185.29.76.2/32",
@@ -218,5 +220,6 @@ variable "cloud_settings" {
       "185.181.22.18/32",
       "46.27.142.96/32"
     ]
+    */
   }
 }
