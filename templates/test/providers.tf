@@ -31,9 +31,9 @@ provider "openstack" {
 }
 
 # Required by module wrappers (azure path) — no resources created on OVH deployments
+# subscription_id læses fra ARM_SUBSCRIPTION_ID env var
 provider "azurerm" {
   features {}
-  subscription_id                 = try(var.cloud_settings.azure.subscription_id, "")
   resource_provider_registrations = "none"
   use_cli                         = false
 }
