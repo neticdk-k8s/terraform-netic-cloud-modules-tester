@@ -90,7 +90,7 @@ variable "tags" {
   type        = map(string)
   description = "Global tags applied to all resources"
   default = {
-    "owner"       = "team-tbr"
+    "owner"       = "team-cn"
     "environment" = "testing"
     "managed-by"  = "terraform"
     "module"      = "Test_K8s_OVH"
@@ -105,9 +105,9 @@ variable "cluster_config" {
   })
   description = "General cluster metadata and tagging"
   default = {
-    cluster_name = "tbr-test-cluster"
+    cluster_name = "vnet_k8s_simpel"
     tags = {
-      "owner"       = "team-tbr"
+      "owner"       = "team-cn"
       "cost_center" = "test-ops"
     }
   }
@@ -163,20 +163,14 @@ variable "network_config" {
   })
   description = "Network configuration"
   default = {
-    name = "test-network"
-    azure = {
-      address_space = ["10.0.12.0/22"]
-      subnets = {
-        aks     = { cidr = "10.0.12.0/24" }
-        default = { cidr = "10.0.13.0/24" }
-      }
-    }
+    name = "vnet_k8s_simpel"
+
     ovh = {
       vlan_id    = 100
       no_gateway = false
       regions = [{
         region = "GRA9"
-        subnet = "10.0.0.0/24"
+        subnet = "10.0.1.0/24"
         dhcp   = true
       }]
     }
@@ -205,7 +199,7 @@ variable "cloud_settings" {
     ovh = {
       project_id = "67241ca1d8b349ce9f6fefb72348bad2"
     }
-    network_id = null
+    network_id      = null
     ip_restrictions = []
     /*  The above does not work from github.  
         private runner with static IPs and allowlist is required.

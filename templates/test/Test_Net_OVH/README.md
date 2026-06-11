@@ -63,6 +63,6 @@ export AWS_SECRET_ACCESS_KEY="..."
 export OS_USERNAME="..."
 export OS_PASSWORD="..."
 
-terraform init
-terraform plan
+tofu init -backend-config="key=Test_Net_OVH_local/tofu.tfstate"
+tofu plan
 ```

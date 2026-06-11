@@ -1,4 +1,4 @@
-# Test_K8S_OVH
+# Test_K8S_Simpel_OVH
 
 Deployer en komplet Kubernetes-platform på OVHcloud med netværk, container registry,
 object storage og GitOps via Flux.
@@ -64,7 +64,7 @@ gitops_config = {
 
 ```bash
 # Hent kubeconfig efter deploy
-terraform output -raw kubeconfig > ~/.kube/config
+tofu output -raw kubeconfig > ~/.kube/config
 
 # Åbn cluster i k9s
 k9s --kubeconfig ~/.kube/config
@@ -119,6 +119,6 @@ cp ../providers.tf providers.tf
 cp ../backend.tf backend.tf
 cp ../common.auto.tfvars common.auto.tfvars
 
-terraform init
-terraform plan
+tofu init -backend-config="key=Test_K8S_Simpel_OVH_local/tofu.tfstate"
+tofu plan
 ```

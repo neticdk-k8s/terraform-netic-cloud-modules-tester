@@ -1,6 +1,6 @@
-# terraform-netic-ovhcloud
+# terraform-netic-cloud-modules-tester
 
-Terraform-konfigurationer til deployment af infrastruktur på OVHcloud. Moduler hentes fra
+OpenTofu-konfigurationer til test-deployment af infrastruktur på OVHcloud og Azure. Moduler hentes fra
 [terraform-netic-cloud-modules](https://github.com/neticdk-k8s/terraform-netic-cloud-modules).
 
 ## Struktur
@@ -8,16 +8,20 @@ Terraform-konfigurationer til deployment af infrastruktur på OVHcloud. Moduler 
 ```
 templates/
 └── test/
-    ├── providers.tf          # Delt providerkonfiguration (kopieres ind i templates ved kørsel)
-    ├── backend.tf            # Delt S3 state-backend (kopieres ind)
-    ├── common.auto.tfvars    # Delte variable (kopieres ind)
-    ├── Test_Net_OVH/         # OVH privat netværk (vRack)
-    └── Test_K8S_OVH/         # Kubernetes-platform med netværk, registry, storage og GitOps
+    ├── providers.tf            # Delt providerkonfiguration (kopieres ind i templates ved kørsel)
+    ├── backend.tf              # Delt S3 state-backend (kopieres ind)
+    ├── common.auto.tfvars      # Delte variable (kopieres ind)
+    ├── Test_Net_OVH/           # OVH privat netværk (vRack)
+    ├── Test_Net_Azure/         # Azure VNet med subnets og NSGs
+    ├── Test_K8S_Simpel_OVH/    # Ét OVH-cluster med netværk, registry, storage og GitOps
+    ├── Test_K8S_Simpel_Azure/  # Ét AKS-cluster med VNet, ACR, storage og GitOps
+    ├── Test_K8S_Contain_OVH/   # Service- + utility-cluster på OVH med GitOps-bootstrap
+    └── Test_K8S_Contain_Azure/ # Service- + utility-cluster på AKS med GitOps-bootstrap
 ```
 
 ## Deployment via GitHub Actions
 
-Workflowen startes manuelt under **Actions → Terraform Plan & Deploy**.
+Workflowen startes manuelt under **Actions → OpenTofu Plan & Deploy**.
 
 Vælg template og handling:
 
@@ -29,10 +33,10 @@ Vælg template og handling:
 
 ## Lokalt
 
-Kopiér de delte filer ind i templatens mappe inden `terraform init`:
+Kopiér de delte filer ind i templatens mappe inden `tofu init`:
 
 ```bash
-TEMPLATE=Test_Net_OVH   # eller Test_K8S_OVH
+TEMPLATE=Test_Net_OVH   # eller en af de andre template-mapper
 cp templates/test/providers.tf     templates/test/$TEMPLATE/providers.tf
 cp templates/test/backend.tf       templates/test/$TEMPLATE/backend.tf
 cp templates/test/common.auto.tfvars templates/test/$TEMPLATE/common.auto.tfvars
@@ -52,8 +56,10 @@ export OS_PASSWORD="..."
 ```
 
 ```bash
-terraform -chdir=templates/test/$TEMPLATE init
-terraform -chdir=templates/test/$TEMPLATE plan
+# State-nøglen SKAL angives ved init — backend.tf har bevidst ingen default,
+# så templates ikke kan komme til at dele state-fil
+tofu -chdir=templates/test/$TEMPLATE init -backend-config="key=${TEMPLATE}_local/tofu.tfstate"
+tofu -chdir=templates/test/$TEMPLATE plan
 ```
 
 ## GitHub Secrets og Variables
@@ -75,9 +81,12 @@ terraform -chdir=templates/test/$TEMPLATE plan
 ## State
 
 State gemmes i OVH Object Storage (S3-kompatibel), bucket `terraformstate09999` i Gravelines (GRA).
-Hver template har sin egen state-fil:
+Hver template/cloud/branch-kombination har sin egen state-fil — nøglen sættes ved `tofu init`
+(workflowet gør det automatisk; lokalt skal `-backend-config` angives):
 
 ```
-templates/Test_Net_OVH/terraform.tfstate
-templates/Test_K8S_OVH/terraform.tfstate
+<template>_<cloud>_<branch>/tofu.tfstate
 ```
+
+> **Bemærk:** State skrevet af Terraform bør ikke genbruges af OpenTofu (og omvendt).
+> Test-miljøer nedlægges med det værktøj der oprettede dem, og genopbygges med `tofu`.

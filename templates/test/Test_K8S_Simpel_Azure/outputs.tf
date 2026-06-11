@@ -35,7 +35,7 @@ output "cluster_id" {
   value       = module.kubernetes.cluster_id
 }
 
-# terraform output -raw kubeconfig > ~/.kube/config
+# tofu output -raw kubeconfig > ~/.kube/config
 output "kubeconfig" {
   description = "Raw kubeconfig — pipe til fil eller brug KUBECONFIG env var"
   value       = module.kubernetes.kubeconfig

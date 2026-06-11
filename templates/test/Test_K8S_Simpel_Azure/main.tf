@@ -24,17 +24,15 @@ module "network" {
 module "registry" {
   source = "github.com/neticdk-k8s/terraform-netic-cloud-modules//modules/container_registry/wrapper"
 
-  cloud_provider = "azure"
-
   container_registry = {
     deploy = var.registry_config.deploy
     name   = var.registry_config.name
-  }
 
-  azure_config = {
-    location       = var.cloud_settings.region
-    resource_group = var.cloud_settings.azure.resource_group
-    sku            = var.registry_config.sku
+    azure = {
+      location       = var.cloud_settings.region
+      resource_group = var.cloud_settings.azure.resource_group
+      sku            = var.registry_config.sku
+    }
   }
 
   registry_users = [
@@ -77,12 +75,14 @@ module "kubernetes" {
   }
 
   cloud_settings = {
-    cloud_provider     = "azure"
-    region             = var.cloud_settings.region
-    project_identifier = var.cloud_settings.azure.resource_group
-    network_id         = module.network.subnet_ids["aks"]
-    azure_dns_prefix   = var.cloud_settings.azure.dns_prefix
-    ip_restrictions    = var.cloud_settings.ip_restrictions
+    region          = var.cloud_settings.region
+    ip_restrictions = var.cloud_settings.ip_restrictions
+
+    azure = {
+      resource_group = var.cloud_settings.azure.resource_group
+      subnet_id      = module.network.subnet_ids["aks"]
+      dns_prefix     = var.cloud_settings.azure.dns_prefix
+    }
   }
 }
 
@@ -93,38 +93,16 @@ module "kubernetes" {
 module "storage_object" {
   source = "github.com/neticdk-k8s/terraform-netic-cloud-modules//modules/storage/object/wrapper"
 
-  cloud_provider = "azure"
-  name           = var.storage_config.name
+  storage = {
+    name = var.storage_config.name
 
-  azure = {
-    resource_group   = var.cloud_settings.azure.resource_group
-    location         = var.cloud_settings.region
-    replication_type = var.storage_config.replication_type
-    versioning       = var.storage_config.versioning
-    retention_days   = var.storage_config.retention_days
-    container_name   = var.storage_config.container_name
-  }
-}
-
-
-# =============================================================================
-# GitOps / Flux Bootstrap
-# =============================================================================
-module "flux_bootstrap" {
-  source = "github.com/neticdk-k8s/terraform-netic-cloud-modules//modules/kubernetes/bootstrap/gitops"
-
-  kubeconfig = module.kubernetes.kubeconfig
-
-  cluster_repo   = var.gitops_config.cluster_repo
-  bootstrap_path = var.gitops_config.bootstrap_path
-
-  git_auth = {
-    netic = {
-      username = var.netic_git_username
-      password = var.netic_git_token
-    }
-    "kubernetes-config" = {
-      identity = var.gitops_ssh_key
+    azure = {
+      resource_group   = var.cloud_settings.azure.resource_group
+      location         = var.cloud_settings.region
+      replication_type = var.storage_config.replication_type
+      versioning       = var.storage_config.versioning
+      retention_days   = var.storage_config.retention_days
+      container_name   = var.storage_config.container_name
     }
   }
 }

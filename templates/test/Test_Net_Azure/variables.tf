@@ -25,17 +25,17 @@ variable "cloud_settings" {
 
 variable "network_config" {
   type = object({
-    name          = optional(string, "vnet-netic-test")
+    name          = optional(string, "vnet-test_azure")
     address_space = list(string)
     subnets       = map(object({ cidr = string }))
   })
   description = "Azure VNet konfiguration"
   default = {
-    name          = "vnet-netic-test"
-    address_space = ["10.0.12.0/22"]
+    name          = "vnet-test_azure"
+    address_space = ["10.0.14.0/22"]
     subnets = {
-      default = { cidr = "10.0.12.0/24" }
-      aks     = { cidr = "10.0.13.0/24" }
+      default = { cidr = "10.0.15.0/24" }
+      aks     = { cidr = "10.0.14.0/24" }
     }
   }
 }

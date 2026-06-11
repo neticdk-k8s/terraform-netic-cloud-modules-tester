@@ -1,5 +1,5 @@
-name: Terraform Plan & Deploy
-run-name: "TF: ${{ inputs.action }} — ${{ inputs.template }}_${{ inputs.cloud }} (by @${{ github.actor }})"
+name: OpenTofu Plan & Deploy
+run-name: "Tofu: ${{ inputs.action }} — ${{ inputs.template }}_${{ inputs.cloud }}_${{ inputs.branch }} (by @${{ github.actor }})"
 
 on:
   workflow_dispatch:
@@ -10,7 +10,8 @@ on:
         type: choice
         options:
           - Test_Net
-          - Test_K8S
+          - Test_K8S_Simpel
+          - Test_K8S_Contain
       cloud:
         description: "Cloud"
         required: true
@@ -18,6 +19,11 @@ on:
         options:
           - OVH
           - Azure
+      branch:
+        description: "Branch"
+        required: true
+        default: "main"
+        type: string
       action:
         description: "Action"
         required: true
@@ -29,7 +35,7 @@ on:
           - destroy
 
 jobs:
-  terraform:
+  opentofu:
     name: "${{ inputs.action }} — ${{ inputs.template }}_${{ inputs.cloud }}"
     runs-on: ubuntu-latest
 
@@ -46,7 +52,7 @@ jobs:
       # OpenStack provider
       OS_USERNAME:            ${{ secrets.OS_USERNAME }}
       OS_PASSWORD:            ${{ secrets.OS_PASSWORD }}
-      # GitOps / Flux (Test_K8S) — ignored by Terraform if variable not declared
+      # GitOps / Flux (Test_K8S) — TF_VAR_* læses også af OpenTofu; ignoreres hvis variablen ikke er deklareret
       TF_VAR_netic_git_username: ${{ secrets.TF_VAR_NETIC_GIT_USERNAME }}
       TF_VAR_netic_git_token:    ${{ secrets.TF_VAR_NETIC_GIT_TOKEN }}
       TF_VAR_gitops_ssh_key:     ${{ secrets.TF_VAR_GITOPS_SSH_KEY }}
@@ -63,35 +69,37 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.branch }}
 
       - name: Guardrail — block destroy without confirmation
         if: ${{ inputs.action == 'destroy' }}
         run: |
           echo "::warning::Running DESTROY on ${{ inputs.template }}_${{ inputs.cloud }}"
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v4
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
 
-      - name: Copy shared Terraform files into template
+      - name: Copy shared OpenTofu files into template
         run: |
           SHARED="templates/test"
           cp "$SHARED/providers.tf"       "$TEMPLATE_DIR/providers.tf"
           cp "$SHARED/backend.tf"         "$TEMPLATE_DIR/backend.tf"
           cp "$SHARED/common.auto.tfvars" "$TEMPLATE_DIR/common.auto.tfvars"
 
-      - name: Terraform Init
+      - name: Tofu Init
         working-directory: ${{ env.TEMPLATE_DIR }}
         run: |
-          terraform init -backend-config="key=$TEMPLATE_DIR/terraform.tfstate"
+          tofu init -backend-config="key=${{ inputs.template }}_${{ inputs.cloud }}_${{ inputs.branch }}/tofu.tfstate"
 
-      - name: Terraform Validate
+      - name: Tofu Validate
         working-directory: ${{ env.TEMPLATE_DIR }}
-        run: terraform validate
+        run: tofu validate
 
-      - name: Terraform Plan
+      - name: Tofu Plan
         if: ${{ inputs.action != 'destroy' }}
         working-directory: ${{ env.TEMPLATE_DIR }}
-        run: terraform plan -out=tfplan
+        run: tofu plan -out=tfplan
 
       - name: Upload Plan Artifact
         if: ${{ inputs.action != 'destroy' }}
@@ -100,26 +108,33 @@ jobs:
           name: tfplan-${{ inputs.template }}_${{ inputs.cloud }}
           path: ${{ env.TEMPLATE_DIR }}/tfplan
 
-      - name: Terraform Apply
+      - name: Tofu Apply
         if: ${{ inputs.action == 'deploy' }}
         working-directory: ${{ env.TEMPLATE_DIR }}
-        run: terraform apply -auto-approve tfplan
+        run: tofu apply -auto-approve tfplan
 
+      # Simpel har ét kubeconfig-output, Contain har ét pr. cluster
       - name: Save kubeconfig
-        if: ${{ inputs.action == 'deploy' && inputs.template == 'Test_K8S' }}
+        if: ${{ inputs.action == 'deploy' && startsWith(inputs.template, 'Test_K8S') }}
         working-directory: ${{ env.TEMPLATE_DIR }}
-        run: terraform output -raw kubeconfig > kubeconfig.yaml
+        run: |
+          if [[ "${{ inputs.template }}" == "Test_K8S_Contain" ]]; then
+            tofu output -raw service_cluster_kubeconfig > kubeconfig-service.yaml
+            tofu output -raw utility_cluster_kubeconfig > kubeconfig-utility.yaml
+          else
+            tofu output -raw kubeconfig > kubeconfig.yaml
+          fi
 
       # kubeconfig gemmes ikke i repo af sikkerhedshensyn — kun tilgængelig som artifact i kort tid
       - name: Upload kubeconfig
-        if: ${{ inputs.action == 'deploy' && inputs.template == 'Test_K8S' }}
+        if: ${{ inputs.action == 'deploy' && startsWith(inputs.template, 'Test_K8S') }}
         uses: actions/upload-artifact@v4
         with:
           name: kubeconfig-${{ inputs.template }}_${{ inputs.cloud }}
-          path: ${{ env.TEMPLATE_DIR }}/kubeconfig.yaml
+          path: ${{ env.TEMPLATE_DIR }}/kubeconfig*.yaml
           retention-days: 1
 
-      - name: Terraform Destroy
+      - name: Tofu Destroy
         if: ${{ inputs.action == 'destroy' }}
         working-directory: ${{ env.TEMPLATE_DIR }}
-        run: terraform destroy -auto-approve
+        run: tofu destroy -auto-approve

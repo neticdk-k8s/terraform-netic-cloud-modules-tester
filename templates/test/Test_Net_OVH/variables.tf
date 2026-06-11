@@ -22,7 +22,7 @@ variable "cloud_settings" {
 
 variable "network_config" {
   type = object({
-    name    = optional(string, "test-private-net")
+    name    = optional(string, "vnet_test_ovh")
     vlan_id = number
     regions = list(object({
       region              = string
@@ -35,12 +35,12 @@ variable "network_config" {
   })
   description = "OVH private network (vRack) configuration"
   default = {
-    name    = "test-private-net2"
+    name    = "vnet_test_ovh"
     vlan_id = 320
     regions = [
       {
         region              = "GRA9"
-        subnet              = "10.0.10.0/24"
+        subnet              = "10.0.14.0/24"
         dhcp                = true
         no_gateway          = false
         ip_allocation_start = 10

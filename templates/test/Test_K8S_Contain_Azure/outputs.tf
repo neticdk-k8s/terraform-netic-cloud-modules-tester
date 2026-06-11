@@ -9,6 +9,7 @@ output "subnet_ids" {
   value       = module.network.subnet_ids
 }
 
+/*
 output "registry_url" {
   description = "Login server URL for the container registry"
   value       = module.registry.registry_url
@@ -31,21 +32,30 @@ output "storage_object_name" {
 }
 
 output "storage_object_connection_string" {
-  description = "Azure object storage connection string (null for OVH)"
+  description = "Primary connection string for the Azure Blob storage account"
   value       = module.storage_object.connection_string
   sensitive   = true
 }
+*/
 
-output "cluster_id" {
-  description = "ID of the Kubernetes cluster"
-  value       = module.kubernetes.cluster_id
+output "service_cluster_id" {
+  description = "ID of the service Kubernetes cluster"
+  value       = module.service_cluster.cluster_id
 }
 
+output "service_cluster_kubeconfig" {
+  description = "Raw kubeconfig for the service cluster — pipe to a file or use with KUBECONFIG env var"
+  value       = module.service_cluster.kubeconfig
+  sensitive   = true
+}
 
-# terraform output -raw kubeconfig > ~/.kube/config
-# k9s --kubeconfig ~/.kube/config
-output "kubeconfig" {
-  description = "Raw kubeconfig — pipe to a file or use with KUBECONFIG env var"
-  value       = module.kubernetes.kubeconfig
+output "utility_cluster_id" {
+  description = "ID of the utility Kubernetes cluster"
+  value       = module.utility_cluster.cluster_id
+}
+
+output "utility_cluster_kubeconfig" {
+  description = "Raw kubeconfig for the utility cluster — pipe to a file or use with KUBECONFIG env var"
+  value       = module.utility_cluster.kubeconfig
   sensitive   = true
 }

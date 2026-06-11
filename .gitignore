@@ -4,6 +4,19 @@ templates/scripts/
 # Local backend credentials — never commit
 backend.local.tfvars
 
+# Cluster admin-credentials skrevet af gitops bootstrap-modulet — må aldrig committes
+.kubeconfig-bootstrap*
+kubeconfig*.yaml
+
+# Plan-filer
+tfplan
+
+# Delte filer kopieres ind fra templates/test/ roden (af workflow eller manuelt)
+# — undermappe-kopierne skal ikke i git
+templates/test/Test_*/providers.tf
+templates/test/Test_*/backend.tf
+templates/test/Test_*/common.auto.tfvars
+
 # MACOS
 .DS_Store
 ._*

@@ -39,23 +39,21 @@ module "network" {
 module "registry" {
   source = "github.com/neticdk-k8s/terraform-netic-cloud-modules//modules/container_registry/wrapper"
 
-  cloud_provider = var.cloud_settings.cloud_provider
-
   container_registry = {
     deploy = var.registry_config.deploy
     name   = var.registry_config.name
+
+    azure = var.cloud_settings.cloud_provider == "azure" ? {
+      location       = var.cloud_settings.region
+      resource_group = var.cloud_settings.azure.resource_group
+      sku            = try(var.registry_config.azure.sku, "Standard")
+    } : null
+
+    ovh = var.cloud_settings.cloud_provider == "ovh" ? {
+      project_id = var.cloud_settings.ovh.project_id
+      region     = var.registry_config.ovh.region
+    } : null
   }
-
-  azure_config = var.cloud_settings.cloud_provider == "azure" ? {
-    location       = var.cloud_settings.region
-    resource_group = var.cloud_settings.azure.resource_group
-    sku            = try(var.registry_config.azure.sku, "Standard")
-  } : null
-
-  ovh_config = var.cloud_settings.cloud_provider == "ovh" ? {
-    project_id = var.cloud_settings.ovh.project_id
-    region     = var.registry_config.ovh.region
-  } : null
 
   registry_users = [
     { login = "ci-user", email = var.registry_config.user_email }
@@ -96,12 +94,19 @@ module "kubernetes" {
   }
 
   cloud_settings = {
-    cloud_provider     = var.cloud_settings.cloud_provider
-    region             = var.cloud_settings.region
-    project_identifier = var.cloud_settings.cloud_provider == "azure" ? var.cloud_settings.azure.resource_group : var.cloud_settings.ovh.project_id
-    network_id         = var.cloud_settings.cloud_provider == "azure" ? module.network.subnet_ids["aks"] : var.cloud_settings.network_id
-    azure_dns_prefix   = try(var.cloud_settings.azure.dns_prefix, null)
-    ip_restrictions    = var.cloud_settings.ip_restrictions
+    region          = var.cloud_settings.region
+    ip_restrictions = var.cloud_settings.ip_restrictions
+
+    azure = var.cloud_settings.cloud_provider == "azure" ? {
+      resource_group = var.cloud_settings.azure.resource_group
+      subnet_id      = module.network.subnet_ids["aks"]
+      dns_prefix     = try(var.cloud_settings.azure.dns_prefix, null)
+    } : null
+
+    ovh = var.cloud_settings.cloud_provider == "ovh" ? {
+      project_id         = var.cloud_settings.ovh.project_id
+      private_network_id = var.cloud_settings.network_id
+    } : null
   }
 }
 
@@ -111,56 +116,24 @@ module "kubernetes" {
 module "storage_object" {
   source = "github.com/neticdk-k8s/terraform-netic-cloud-modules//modules/storage/object/wrapper"
 
-  cloud_provider = var.cloud_settings.cloud_provider
-  name           = var.storage_config.name
+  storage = {
+    name = var.storage_config.name
 
-  ovh = var.cloud_settings.cloud_provider == "ovh" ? {
-    project_id       = var.cloud_settings.ovh.project_id
-    region           = try(var.storage_config.ovh.region, "GRA")
-    versioning       = try(var.storage_config.ovh.versioning, "enabled")
-    encryption_sse   = try(var.storage_config.ovh.encryption_sse, "AES256")
-    object_lock_days = try(var.storage_config.ovh.object_lock_days, 0)
-  } : null
+    ovh = var.cloud_settings.cloud_provider == "ovh" ? {
+      project_id       = var.cloud_settings.ovh.project_id
+      region           = try(var.storage_config.ovh.region, "GRA")
+      versioning       = try(var.storage_config.ovh.versioning, "enabled")
+      encryption_sse   = try(var.storage_config.ovh.encryption_sse, "AES256")
+      object_lock_days = try(var.storage_config.ovh.object_lock_days, 0)
+    } : null
 
-  azure = var.cloud_settings.cloud_provider == "azure" ? {
-    resource_group   = var.cloud_settings.azure.resource_group
-    location         = var.cloud_settings.region
-    replication_type = try(var.storage_config.azure.replication_type, "LRS")
-    versioning       = try(var.storage_config.azure.versioning, true)
-    retention_days   = try(var.storage_config.azure.retention_days, 7)
-    container_name   = try(var.storage_config.azure.container_name, "data")
-  } : null
-}
-
-
-# =============================================================================
-# GitOps / Flux Bootstrap
-# =============================================================================
-module "flux_bootstrap" {
-  source = "github.com/neticdk-k8s/terraform-netic-cloud-modules//modules/kubernetes/bootstrap/gitops"
-
-  kubeconfig = module.kubernetes.kubeconfig
-
-  cluster_repo   = var.gitops_config.cluster_repo
-  bootstrap_path = var.gitops_config.bootstrap_path
-
-  git_auth = {
-    netic = {
-      username = var.netic_git_username
-      password = var.netic_git_token
-    }
-    "kubernetes-config" = {
-      identity = var.gitops_ssh_key
-    }
+    azure = var.cloud_settings.cloud_provider == "azure" ? {
+      resource_group   = var.cloud_settings.azure.resource_group
+      location         = var.cloud_settings.region
+      replication_type = try(var.storage_config.azure.replication_type, "LRS")
+      versioning       = try(var.storage_config.azure.versioning, true)
+      retention_days   = try(var.storage_config.azure.retention_days, 7)
+      container_name   = try(var.storage_config.azure.container_name, "data")
+    } : null
   }
-}
-
-# =============================================================================
-# Role Assignments (Azure only)
-# =============================================================================
-resource "azurerm_role_assignment" "aks_network" {
-  count                = var.cloud_settings.cloud_provider == "azure" ? 1 : 0
-  scope                = module.network.subnet_ids["aks"]
-  role_definition_name = "Network Contributor"
-  principal_id         = module.kubernetes.cluster_identity_id
 }

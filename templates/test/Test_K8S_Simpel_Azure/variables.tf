@@ -46,7 +46,7 @@ variable "cloud_settings" {
       resource_group  = "rg-tbr-test"
       dns_prefix      = "netictest"
     }
-    network_id = null
+    network_id      = null
     ip_restrictions = []
   }
 }
@@ -59,11 +59,11 @@ variable "network_config" {
   })
   description = "Azure VNet konfiguration"
   default = {
-    name          = "vnet-netic-test"
-    address_space = ["10.0.12.0/22"]
+    name          = "vnet-k8s-simpel"
+    address_space = ["10.0.16.0/22"]
     subnets = {
-      aks     = { cidr = "10.0.12.0/24" }
-      default = { cidr = "10.0.13.0/24" }
+      aks     = { cidr = "10.0.16.0/24" }
+      default = { cidr = "10.0.17.0/24" }
     }
   }
 }
@@ -121,7 +121,7 @@ variable "tags" {
     "owner"       = "team-tbr"
     "environment" = "testing"
     "managed-by"  = "terraform"
-    "module"      = "Test_K8S_Azure"
+    "module"      = "Test_K8S_Simpel_Azure"
   }
 }
 
@@ -133,9 +133,9 @@ variable "cluster_config" {
   })
   description = "AKS cluster metadata"
   default = {
-    cluster_name = "aks-netic-test"
+    cluster_name = "aks-k8s-simpel"
     tags = {
-      "owner"       = "team-tbr"
+      "owner"       = "team-cn"
       "cost_center" = "test-ops"
     }
   }
@@ -161,12 +161,12 @@ variable "node_config" {
   })
   description = "AKS nodepool konfiguration"
   default = {
-    node_size         = "medium"
-    node_count        = 1
-    min_count         = 1
-    max_count         = 3
-    autoscale_enabled = false
+    node_size          = "medium"
+    node_count         = 1
+    min_count          = 1
+    max_count          = 3
+    autoscale_enabled  = false
     availability_zones = ["1", "2", "3"]
-    labels            = { "role" = "stateless-apps" }
+    labels             = { "role" = "stateless-apps" }
   }
 }

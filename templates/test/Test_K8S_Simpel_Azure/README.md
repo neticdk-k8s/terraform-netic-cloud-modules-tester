@@ -1,4 +1,4 @@
-# Test_K8S_Azure
+# Test_K8S_Simpel_Azure
 
 Deployer en komplet Kubernetes-platform på Azure med VNet, ACR, AKS, Blob Storage og GitOps via Flux.
 
@@ -85,6 +85,6 @@ cp ../providers.tf providers.tf
 cp ../backend.tf backend.tf
 cp ../common.auto.tfvars common.auto.tfvars
 
-terraform init
-terraform plan
+tofu init -backend-config="key=Test_K8S_Simpel_Azure_local/tofu.tfstate"
+tofu plan
 ```

@@ -59,6 +59,6 @@ export ARM_CLIENT_SECRET="..."
 export ARM_SUBSCRIPTION_ID="..."
 export ARM_TENANT_ID="..."
 
-terraform init
-terraform plan
+tofu init -backend-config="key=Test_Net_Azure_local/tofu.tfstate"
+tofu plan
 ```
