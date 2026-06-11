@@ -1,0 +1,125 @@
+name: OpenTofu Full Test (alle kombinationer)
+run-name: "Tofu fulltest: ${{ inputs.branch }} (by @${{ github.actor }})"
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch"
+        required: true
+        default: "main"
+        type: string
+      max_parallel:
+        description: "Max samtidige kombinationer"
+        required: true
+        default: "2"
+        type: choice
+        options:
+          - "1"
+          - "2"
+          - "3"
+          - "6"
+
+# Kun én fulltest ad gangen — to samtidige kørsler ville ramme samme ressourcenavne
+concurrency:
+  group: tofu-fulltest
+  cancel-in-progress: false
+
+jobs:
+  fulltest:
+    name: "${{ matrix.template }}_${{ matrix.cloud }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    strategy:
+      fail-fast: false # én fejlende kombination skal ikke stoppe de andre
+      max-parallel: ${{ fromJSON(inputs.max_parallel) }}
+      matrix:
+        template: [Test_Net, Test_K8S_Simpel, Test_K8S_Contain]
+        cloud: [OVH, Azure]
+
+    env:
+      TEMPLATE_DIR: templates/test/${{ matrix.template }}_${{ matrix.cloud }}
+      # OVH provider
+      OVH_ENDPOINT:           ${{ vars.OVH_ENDPOINT }}
+      OVH_APPLICATION_KEY:    ${{ secrets.OVH_APPLICATION_KEY }}
+      OVH_APPLICATION_SECRET: ${{ secrets.OVH_APPLICATION_SECRET }}
+      OVH_CONSUMER_KEY:       ${{ secrets.OVH_CONSUMER_KEY }}
+      # S3 state backend
+      AWS_ACCESS_KEY_ID:      ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      # OpenStack provider
+      OS_USERNAME:            ${{ secrets.OS_USERNAME }}
+      OS_PASSWORD:            ${{ secrets.OS_PASSWORD }}
+      # GitOps / Flux (Test_K8S) — TF_VAR_* læses også af OpenTofu; ignoreres hvis variablen ikke er deklareret
+      TF_VAR_netic_git_username: ${{ secrets.TF_VAR_NETIC_GIT_USERNAME }}
+      TF_VAR_netic_git_token:    ${{ secrets.TF_VAR_NETIC_GIT_TOKEN }}
+      TF_VAR_gitops_ssh_key:     ${{ secrets.TF_VAR_GITOPS_SSH_KEY }}
+      # Azure provider — required by module wrappers even on OVH deployments
+      ARM_CLIENT_ID:       ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET:   ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID:       ${{ vars.ARM_TENANT_ID }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+
+      - name: Copy shared OpenTofu files into template
+        run: |
+          SHARED="templates/test"
+          cp "$SHARED/providers.tf"       "$TEMPLATE_DIR/providers.tf"
+          cp "$SHARED/backend.tf"         "$TEMPLATE_DIR/backend.tf"
+          cp "$SHARED/common.auto.tfvars" "$TEMPLATE_DIR/common.auto.tfvars"
+
+      # Egen state-nøgle pr. kombination, adskilt fra manuelle deploys
+      - name: Tofu Init
+        id: init
+        working-directory: ${{ env.TEMPLATE_DIR }}
+        run: |
+          tofu init -backend-config="key=fulltest/${{ matrix.template }}_${{ matrix.cloud }}/tofu.tfstate"
+
+      - name: Tofu Validate
+        working-directory: ${{ env.TEMPLATE_DIR }}
+        run: tofu validate
+
+      - name: Tofu Plan
+        id: plan
+        working-directory: ${{ env.TEMPLATE_DIR }}
+        run: tofu plan -out=tfplan
+
+      # Kører kun når plan lykkedes — fejler plan, springes direkte til oprydning
+      - name: Tofu Apply
+        if: ${{ steps.plan.outcome == 'success' }}
+        working-directory: ${{ env.TEMPLATE_DIR }}
+        run: tofu apply -auto-approve tfplan
+
+      # Kører ALTID når init lykkedes — også efter fejlet plan/apply — så halvt
+      # oprettede ressourcer ryddes op. Cloud-destroys er flaky, så op til 3 forsøg.
+      - name: Tofu Destroy (oprydning, med retry)
+        if: ${{ always() && steps.init.outcome == 'success' }}
+        working-directory: ${{ env.TEMPLATE_DIR }}
+        run: |
+          for attempt in 1 2 3; do
+            if tofu destroy -auto-approve; then
+              exit 0
+            fi
+            echo "::warning::destroy forsøg $attempt fejlede — prøver igen om 60s"
+            sleep 60
+          done
+          echo "::error::destroy fejlede efter 3 forsøg — manuel oprydning: tofu init -backend-config=\"key=fulltest/${{ matrix.template }}_${{ matrix.cloud }}/tofu.tfstate\" && tofu destroy"
+          exit 1
+
+      - name: Resultat til summary
+        if: ${{ always() }}
+        run: |
+          echo "### ${{ matrix.template }}_${{ matrix.cloud }}: ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
