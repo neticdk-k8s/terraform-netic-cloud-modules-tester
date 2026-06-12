@@ -188,7 +188,7 @@ variable "service_cluster" {
       }
     }
     node_config = {
-      node_size          = "small"
+      node_size          = "test-large"
       node_count         = 2
       min_count          = 2
       max_count          = 5
@@ -242,7 +242,7 @@ variable "utility_cluster" {
       }
     }
     node_config = {
-      node_size          = "small"
+      node_size          = "test-medium"
       node_count         = 1
       min_count          = 1
       max_count          = 5
