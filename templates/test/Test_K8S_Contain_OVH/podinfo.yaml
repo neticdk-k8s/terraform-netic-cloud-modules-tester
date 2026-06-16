@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: podinfo2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: podinfo-instance-a
+  namespace: podinfo2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: podinfo2
+      instance: a
+  template:
+    metadata:
+      labels:
+        app: podinfo
+        instance: a
+    spec:
+      containers:
+      - name: podinfo
+        image: ghcr.io/stefanprodan/podinfo:6.7.0
+        ports:
+        - containerPort: 9897
+        env:
+        - name: PODINFO_UI_COLOR
+          value: "#3498db" # Lyseblå
+        - name: PODINFO_UI_MESSAGE
+          value: "Velkommen til INSTANCE A (Den blå boks)"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: podinfo-instance-b
+  namespace: podinfo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: podinfo
+      instance: b
+  template:
+    metadata:
+      labels:
+        app: podinfo
+        instance: b
+    spec:
+      containers:
+      - name: podinfo
+        image: ghcr.io/stefanprodan/podinfo:6.7.0
+        ports:
+        - containerPort: 9897
+        env:
+        - name: PODINFO_UI_COLOR
+          value: "#e74c3c" # Rød
+        - name: PODINFO_UI_MESSAGE
+          value: "Velkommen til INSTANCE B (Den røde boks)"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: podinfo-external-lb
+  namespace: podinfo2
+spec:
+  type: LoadBalancer
+  selector:
+    app: podinfo # Sørger for at LB fanger BÅDE instance A og B
+  ports:
+  - protocol: TCP
+    port: 88 # Den eksterne port du tilgår i browseren
+    targetPort: 9897 # Porten som podinfo lytter på internt

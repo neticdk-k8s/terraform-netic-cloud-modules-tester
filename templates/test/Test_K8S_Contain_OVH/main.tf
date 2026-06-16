@@ -99,6 +99,7 @@ module "service_cluster_kubernetes_config" {
   depends_on = [module.service_cluster_flux_bootstrap]
 }
 
+/*
 # =============================================================================
 # Storage — OVH Object Storage
 # =============================================================================
@@ -161,3 +162,5 @@ module "utility_cluster_kubernetes_config" {
 
   depends_on = [module.utility_cluster_flux_bootstrap]
 }
+
+*/

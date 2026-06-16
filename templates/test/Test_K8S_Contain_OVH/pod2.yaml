@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: podinfo2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: podinfo-instance-a
+  namespace: podinfo2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: podinfo # RETTET HER (fjernet 2-tallet)
+      instance: a
+  template:
+    metadata:
+      labels:
+        app: podinfo
+        instance: a
+    spec:
+      containers:
+      - name: podinfo
+        image: ghcr.io/stefanprodan/podinfo:6.7.0
+        ports:
+        - containerPort: 9898
+        env:
+        - name: PODINFO_UI_COLOR
+          value: "#3498bb" # Lyseblå
+        - name: PODINFO_UI_MESSAGE
+          value: "Velkommen til INSTANCE A på pod2 (Den blå boks)"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: podinfo-instance-b
+  namespace: podinfo2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: podinfo
+      instance: b
+  template:
+    metadata:
+      labels:
+        app: podinfo
+        instance: b
+    spec:
+      containers:
+      - name: podinfo
+        image: ghcr.io/stefanprodan/podinfo:6.7.0
+        ports:
+        - containerPort: 9898
+        env:
+        - name: PODINFO_UI_COLOR
+          value: "#e74c1c" # Rød
+        - name: PODINFO_UI_MESSAGE
+          value: "Velkommen til INSTANCE B på pod2 (Den røde boks)"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: podinfo-external-lb
+  namespace: podinfo2
+spec:
+  type: LoadBalancer
+  selector:
+    app: podinfo # Fanger nu helt korrekt BÅDE instance A og B
+  ports:
+  - protocol: TCP
+    port: 88 
+    targetPort: 9898
