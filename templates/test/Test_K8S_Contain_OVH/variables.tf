@@ -102,7 +102,7 @@ variable "storage_config" {
   type = object({
     names = list(string)
     ovh = object({
-      region           = optional(string, "UK1")
+      region           = optional(string, "UK")
       versioning       = optional(string, "enabled")
       encryption_sse   = optional(string, "AES256")
       object_lock_days = optional(number, 0)
@@ -112,7 +112,7 @@ variable "storage_config" {
   default = {
     names = ["k8s_mimir_tbr", "k8s_tempo_tbr", "k8s_loki_tbr"]
     ovh = {
-      region           = "UK1"
+      region           = "UK"
       versioning       = "enabled"
       encryption_sse   = "AES256"
       object_lock_days = 0
