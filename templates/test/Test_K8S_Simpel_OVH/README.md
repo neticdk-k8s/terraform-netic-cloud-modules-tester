@@ -82,7 +82,7 @@ k9s --kubeconfig ~/.kube/config
 
 ```bash
 # OVH + OpenStack
-export OVH_ENDPOINT="ovh-ca"
+export OVH_ENDPOINT="ovh-eu"
 export OVH_APPLICATION_KEY="..."
 export OVH_APPLICATION_SECRET="..."
 export OVH_CONSUMER_KEY="..."

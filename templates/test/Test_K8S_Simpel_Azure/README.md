@@ -23,7 +23,7 @@ cloud_settings = {
   azure = {
     subscription_id = "<subscription-id>"
     resource_group  = "rg-netic-test"   # skal eksistere i forvejen
-    dns_prefix      = "netictest"
+    dns_prefix      = "neticsimpel"
   }
   ip_restrictions = ["<din IP>/32"]
 }

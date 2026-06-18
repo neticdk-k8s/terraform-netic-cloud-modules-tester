@@ -54,7 +54,7 @@ cp ../providers.tf providers.tf
 cp ../backend.tf backend.tf
 cp ../common.auto.tfvars common.auto.tfvars
 
-export OVH_ENDPOINT="ovh-ca"
+export OVH_ENDPOINT="ovh-eu"
 export OVH_APPLICATION_KEY="..."
 export OVH_APPLICATION_SECRET="..."
 export OVH_CONSUMER_KEY="..."

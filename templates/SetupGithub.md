@@ -103,26 +103,25 @@ export TF_VAR_gitops_ssh_key
 gh auth login
 gh repo view
 
-echo "$ARM_CLIENT_ID"| gh secret set ARM_CLIENT_ID --repo "$REPO"
-echo "$ARM_CLIENT_SECRET"| gh secret set ARM_CLIENT_SECRET --repo  "$REPO"
-echo "$ARM_TENANT_ID"| gh variable set ARM_TENANT_ID --repo  "$REPO"
-echo "$ARM_SUBSCRIPTION_ID"| gh variable set ARM_SUBSCRIPTION_ID --repo  "$REPO"
+printf '%s' "$ARM_CLIENT_ID"| gh secret set ARM_CLIENT_ID --repo "$REPO"
+printf '%s' "$ARM_CLIENT_SECRET"| gh secret set ARM_CLIENT_SECRET --repo  "$REPO"
+printf '%s' "$ARM_TENANT_ID"| gh variable set ARM_TENANT_ID --repo  "$REPO"
+printf '%s' "$ARM_SUBSCRIPTION_ID"| gh variable set ARM_SUBSCRIPTION_ID --repo  "$REPO"
 
 
-echo "$PROJECT_ID" | gh variable set PROJECT_ID  --repo "$REPO"
-echo "$OS_USERNAME" | gh secret set OS_USERNAME --repo  "$REPO"
-echo "$OS_PASSWORD"| gh secret set OS_PASSWORD --repo  "$REPO"
-echo "$OVH_ENDPOINT"  | gh variable set OVH_ENDPOINT --repo  "$REPO"
+printf '%s' "$PROJECT_ID" | gh variable set PROJECT_ID  --repo "$REPO"
+printf '%s' "$OS_USERNAME" | gh secret set OS_USERNAME --repo  "$REPO"
+printf '%s' "$OS_PASSWORD"| gh secret set OS_PASSWORD --repo  "$REPO"
+printf '%s' "$OVH_ENDPOINT"  | gh variable set OVH_ENDPOINT --repo  "$REPO"
 
-echo "$OVH_ENDPOINT" |  gh secret set OVH_ENDPOINT --repo  "$REPO"
-echo "$OVH_APPLICATION_KEY" |  gh secret set OVH_APPLICATION_KEY --repo  "$REPO"
-echo "$OVH_APPLICATION_SECRET"|  gh secret set OVH_APPLICATION_SECRET --repo  "$REPO"
-echo "$OVH_CONSUMER_KEY" |  gh secret set OVH_CONSUMER_KEY --repo  "$REPO"
+printf '%s' "$OVH_APPLICATION_KEY" |  gh secret set OVH_APPLICATION_KEY --repo  "$REPO"
+printf '%s' "$OVH_APPLICATION_SECRET"|  gh secret set OVH_APPLICATION_SECRET --repo  "$REPO"
+printf '%s' "$OVH_CONSUMER_KEY" |  gh secret set OVH_CONSUMER_KEY --repo  "$REPO"
 
-echo "$BUCKET_NAME" | gh variable set BUCKET_NAME --repo  "$REPO"
-echo "$AWS_ACCESS_KEY_ID" |  gh secret set AWS_ACCESS_KEY_ID --repo  "$REPO"
-echo "$AWS_SECRET_ACCESS_KEY" | gh secret set AWS_SECRET_ACCESS_KEY --repo  "$REPO"
-echo "$AWS_REGION" |  gh secret set AWS_REGION --repo  "$REPO"
+printf '%s' "$BUCKET_NAME" | gh variable set BUCKET_NAME --repo  "$REPO"
+printf '%s' "$AWS_ACCESS_KEY_ID" |  gh secret set AWS_ACCESS_KEY_ID --repo  "$REPO"
+printf '%s' "$AWS_SECRET_ACCESS_KEY" | gh secret set AWS_SECRET_ACCESS_KEY --repo  "$REPO"
+printf '%s' "$AWS_REGION" |  gh secret set AWS_REGION --repo  "$REPO"
 
 
 gh variable list --repo  "$REPO"

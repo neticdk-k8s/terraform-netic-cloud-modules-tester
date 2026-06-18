@@ -45,20 +45,23 @@ cp templates/test/common.auto.tfvars templates/test/$TEMPLATE/common.auto.tfvars
 Sæt environment-variabler:
 
 ```bash
-export OVH_ENDPOINT="ovh-ca"
-export OVH_APPLICATION_KEY="..."
+export OVH_ENDPOINT="ovh-eu"
+export TF_VAR_ovh_api_region="ovh-eu"   # provideren læser sit endpoint herfra
+export OVH_APPLICATION_KEY="..."         # EU-token fra https://eu.api.ovh.com/createToken
 export OVH_APPLICATION_SECRET="..."
 export OVH_CONSUMER_KEY="..."
-export AWS_ACCESS_KEY_ID="..."       # OVH S3-bruger til state-filen
+export AWS_ACCESS_KEY_ID="..."           # OVH S3-bruger til state-filen
 export AWS_SECRET_ACCESS_KEY="..."
-export OS_USERNAME="..."             # OVH OpenStack-bruger
+export OS_USERNAME="..."                 # OVH OpenStack-bruger
 export OS_PASSWORD="..."
 ```
 
 ```bash
-# State-nøglen SKAL angives ved init — backend.tf har bevidst ingen default,
-# så templates ikke kan komme til at dele state-fil
-tofu -chdir=templates/test/$TEMPLATE init -backend-config="key=${TEMPLATE}_local/tofu.tfstate"
+# Både bucket OG state-nøgle SKAL angives ved init — backend.tf har bevidst
+# ingen defaults, så templates ikke kan komme til at dele state-fil
+tofu -chdir=templates/test/$TEMPLATE init \
+  -backend-config="bucket=terraform-state-tbr" \
+  -backend-config="key=${TEMPLATE}_local/tofu.tfstate"
 tofu -chdir=templates/test/$TEMPLATE plan
 ```
 
@@ -66,21 +69,30 @@ tofu -chdir=templates/test/$TEMPLATE plan
 
 | Navn | Type | Beskrivelse |
 |---|---|---|
-| `OVH_ENDPOINT` | Variable | API-region, fx `ovh-ca` |
-| `OVH_APPLICATION_KEY` | Secret | OVH API application key |
+| `BUCKET_NAME` | Variable | S3-bucket til state, fx `terraform-state-tbr` |
+| `OVH_ENDPOINT` | Variable | API-region, fx `ovh-eu` (sendes ind som `TF_VAR_ovh_api_region`) |
+| `PROJECT_ID` | Variable | OVH public cloud projekt-id |
+| `ARM_SUBSCRIPTION_ID` | Variable | Azure subscription id *(Azure)* |
+| `ARM_TENANT_ID` | Variable | Azure tenant id *(Azure)* |
+| `OVH_APPLICATION_KEY` | Secret | OVH API application key (EU-token) |
 | `OVH_APPLICATION_SECRET` | Secret | OVH API application secret |
 | `OVH_CONSUMER_KEY` | Secret | OVH API consumer key |
 | `AWS_ACCESS_KEY_ID` | Secret | OVH S3 access key (state-backend) |
 | `AWS_SECRET_ACCESS_KEY` | Secret | OVH S3 secret key (state-backend) |
 | `OS_USERNAME` | Secret | OpenStack-brugernavn |
 | `OS_PASSWORD` | Secret | OpenStack-password |
+| `ARM_CLIENT_ID` | Secret | Azure service principal client id *(Azure)* |
+| `ARM_CLIENT_SECRET` | Secret | Azure service principal secret *(Azure)* |
 | `TF_VAR_NETIC_GIT_USERNAME` | Secret | Git-brugernavn til Flux bootstrap *(K8S)* |
 | `TF_VAR_NETIC_GIT_TOKEN` | Secret | Git-token til Flux bootstrap *(K8S)* |
 | `TF_VAR_GITOPS_SSH_KEY` | Secret | SSH-nøgle til kubernetes-config repo *(K8S)* |
 
+> **Bemærk:** Når secrets sættes via `gh secret set`, brug `printf '%s'` (ikke `echo`) for
+> at undgå en trailing newline i værdien — en `\n` i en nøgle giver ellers ugyldig signatur (403).
+
 ## State
 
-State gemmes i OVH Object Storage (S3-kompatibel), bucket `terraformstate09999` i Gravelines (GRA).
+State gemmes i OVH Object Storage (S3-kompatibel), bucket `terraform-state-tbr` i Gravelines (GRA).
 Hver template/cloud/branch-kombination har sin egen state-fil — nøglen sættes ved `tofu init`
 (workflowet gør det automatisk; lokalt skal `-backend-config` angives):
 
