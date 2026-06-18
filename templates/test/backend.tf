@@ -1,15 +1,15 @@
 # State-nøglen OG bucket sættes bevidst IKKE her — de angives ved init, så
 # to templates aldrig deler (og overskriver) samme state-fil, og bucket kan
-# styres fra en GitHub-variabel (vars.TF_STATE_BUCKET):
+# styres fra en GitHub-variabel (vars.BUCKET_NAME):
 #   tofu init -backend-config="bucket=<bucket>" \
 #             -backend-config="key=<template>_<cloud>_<branch>/tofu.tfstate"
 # Workflowet gør dette automatisk.
 terraform {
   backend "s3" {
-    region = "gra"
+    region = "bhs"
 
     endpoints = {
-      s3 = "https://s3.gra.io.cloud.ovh.net"
+      s3 = "https://s3.bhs.io.cloud.ovh.net"
     }
 
     skip_credentials_validation = true
