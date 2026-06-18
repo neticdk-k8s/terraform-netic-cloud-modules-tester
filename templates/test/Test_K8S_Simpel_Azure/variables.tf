@@ -23,7 +23,7 @@ variable "gitops_ssh_key" {
 variable "ovh_api_region" {
   type        = string
   description = "OVH API endpoint — påkrævet af delt providers.tf"
-  default     = "ovh-ca"
+  default     = "ovh-eu"
 }
 
 variable "cloud_settings" {

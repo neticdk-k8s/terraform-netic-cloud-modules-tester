@@ -88,15 +88,30 @@ module "service_cluster_kubernetes_config" {
   depends_on = [module.service_cluster_flux_bootstrap]
 }
 
-/*
 # =============================================================================
 # Storage — Azure Blob Storage
+# Ét storage account pr. navn i var.storage_config.names (k8smimirtbr,
+# k8stempotbr, k8slokitbr). for_each gør hver instans adresserbar på sit navn.
+# Azure storage account-navne skal være globalt unikke, så der hægtes et
+# tilfældigt suffiks på hvert navn (lowercase alfanumerisk, samlet ≤ 24 tegn).
 # =============================================================================
+resource "random_string" "storage_suffix" {
+  for_each = toset(var.storage_config.names)
+
+  length  = 6
+  lower   = true
+  upper   = false
+  numeric = true
+  special = false
+}
+
 module "storage_object" {
   source = "github.com/neticdk-k8s/terraform-netic-cloud-modules//modules/storage/object/wrapper"
 
+  for_each = toset(var.storage_config.names)
+
   storage = {
-    name = var.storage_config.name
+    name = "${each.value}${random_string.storage_suffix[each.key].result}"
 
     azure = {
       resource_group   = var.cloud_settings.azure.resource_group
@@ -108,7 +123,6 @@ module "storage_object" {
     }
   }
 }
-*/
 
 # =============================================================================
 # Kubernetes — Azure Kubernetes Service (AKS)   Utility Cluster

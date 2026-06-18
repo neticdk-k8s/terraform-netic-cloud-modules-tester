@@ -1,7 +1,7 @@
 variable "ovh_api_region" {
   type        = string
   description = "OVH API endpoint region — påkrævet af delt providers.tf"
-  default     = "ovh-ca"
+  default     = "ovh-eu"
 }
 
 variable "cloud_settings" {

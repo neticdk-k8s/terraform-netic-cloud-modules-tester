@@ -86,7 +86,9 @@ jobs:
         id: init
         working-directory: ${{ env.TEMPLATE_DIR }}
         run: |
-          tofu init -backend-config="key=fulltest/${{ matrix.template }}_${{ matrix.cloud }}/tofu.tfstate"
+          tofu init \
+            -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" \
+            -backend-config="key=fulltest/${{ matrix.template }}_${{ matrix.cloud }}/tofu.tfstate"
 
       - name: Tofu Validate
         working-directory: ${{ env.TEMPLATE_DIR }}
@@ -116,7 +118,7 @@ jobs:
             echo "::warning::destroy forsøg $attempt fejlede — prøver igen om 60s"
             sleep 60
           done
-          echo "::error::destroy fejlede efter 3 forsøg — manuel oprydning: tofu init -backend-config=\"key=fulltest/${{ matrix.template }}_${{ matrix.cloud }}/tofu.tfstate\" && tofu destroy"
+          echo "::error::destroy fejlede efter 3 forsøg — manuel oprydning: tofu init -backend-config=\"bucket=${{ vars.TF_STATE_BUCKET }}\" -backend-config=\"key=fulltest/${{ matrix.template }}_${{ matrix.cloud }}/tofu.tfstate\" && tofu destroy"
           exit 1
 
       - name: Resultat til summary

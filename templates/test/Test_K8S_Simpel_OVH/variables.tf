@@ -25,7 +25,7 @@ variable "gitops_ssh_key" {
 variable "ovh_api_region" {
   type        = string
   description = "OVH API endpoint region (e.g., 'ovh-eu', 'ovh-ca')"
-  default     = "ovh-ca"
+  default     = "ovh-eu"
 }
 
 variable "registry_config" {
@@ -197,7 +197,7 @@ variable "cloud_settings" {
     cloud_provider = "ovh"
     region         = "GRA9"
     ovh = {
-      project_id = "67241ca1d8b349ce9f6fefb72348bad2"
+      project_id = "bb219a2fd02c487798bbb0b349f622a5"
     }
     network_id      = null
     ip_restrictions = []

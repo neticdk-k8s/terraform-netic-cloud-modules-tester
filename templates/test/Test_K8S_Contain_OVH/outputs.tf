@@ -11,17 +11,15 @@ output "subnet_ids" {
   value       = module.network.subnet_ids
 }
 */
-/*
-output "storage_object_id" {
-  description = "ID of the object storage resource"
-  value       = module.storage_object.storage_id
+output "storage_object_ids" {
+  description = "Map af bucket-navn til storage ID"
+  value       = { for k, m in module.storage_object : k => m.storage_id }
 }
 
-output "storage_object_name" {
-  description = "Name of the object storage resource"
-  value       = module.storage_object.storage_name
+output "storage_object_names" {
+  description = "Map af bucket-navn til oprettet storage-navn"
+  value       = { for k, m in module.storage_object : k => m.storage_name }
 }
-*/
 output "service_cluster_id" {
   description = "ID of the service Kubernetes cluster"
   value       = module.service_cluster.cluster_id

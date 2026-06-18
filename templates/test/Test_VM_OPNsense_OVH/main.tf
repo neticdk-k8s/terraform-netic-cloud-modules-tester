@@ -3,29 +3,16 @@
 # Network — OVH private vRack network
 # =============================================================================
 module "network" {
-  source = "github.com/neticdk-k8s/terraform-netic-cloud-modules//modules/network/network/wrapper"
+  source   = "github.com/neticdk-k8s/terraform-netic-cloud-modules//modules/network/network/wrapper"
+  for_each = { for net in var.networks : net.name => net }
 
   network = {
-    name = var.network_config.name
+    name = each.value.name
 
     ovh = {
       project_id = var.cloud_settings.ovh.project_id
-      vlan_id    = var.network_config.vlan_id
-      regions    = var.network_config.regions
-    }
-  }
-}
-
-module "network2" {
-  source = "github.com/neticdk-k8s/terraform-netic-cloud-modules//modules/network/network/wrapper"
-
-  network = {
-    name = var.network2_config.name
-
-    ovh = {
-      project_id = var.cloud_settings.ovh.project_id
-      vlan_id    = var.network2_config.vlan_id
-      regions    = var.network2_config.regions
+      vlan_id    = each.value.vlan_id
+      regions    = each.value.regions
     }
   }
 }
@@ -75,12 +62,34 @@ module "vm" {
     ovh = {
       project_id      = var.cloud_settings.ovh.project_id
       image_name      = var.vm_config.image_name # skal matche det uploadede image eller et eksisterende image i OVH-projektet
-      network_names   = [var.network_config.name, var.network2_config.name]
+      network_names   = [for net in var.networks : net.name]
       security_groups = var.vm_config.security_groups
     }
 
     tags = var.tags
   }
 
-  depends_on = [module.network, module.network2]
+  depends_on = [module.network]
+}
+
+resource "null_resource" "opnsense_config" {
+  depends_on = [module.vm]
+
+  connection {
+    type     = "ssh"
+    host     = module.vm.public_ip
+    user     = "root"
+    password = "opnsense" # default until the pushed config changes it
+  }
+
+  # Drop the saved config into place
+  provisioner "file" {
+    source      = "${path.module}/config.xml"
+    destination = "/conf/config.xml"
+  }
+
+  # Reboot to apply the swapped configuration cleanly
+  provisioner "remote-exec" {
+    inline = ["/sbin/reboot"]
+  }
 }

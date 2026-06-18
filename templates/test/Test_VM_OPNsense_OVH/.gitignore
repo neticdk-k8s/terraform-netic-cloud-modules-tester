@@ -1,0 +1,7 @@
+# Copied in by workflow / local test runs — must not be committed
+providers.tf
+backend.tf
+common.auto.tfvars
+tfplan
+.terraform
+.terraform.lock.hcl

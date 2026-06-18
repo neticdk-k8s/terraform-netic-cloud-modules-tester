@@ -99,15 +99,18 @@ module "service_cluster_kubernetes_config" {
   depends_on = [module.service_cluster_flux_bootstrap]
 }
 
-/*
 # =============================================================================
 # Storage — OVH Object Storage
+# Ét bucket pr. navn i var.storage_config.names (k8s_mimir_tbr, k8s_tempo_tbr,
+# k8s_loki_tbr). for_each gør hver instans adresserbar på sit navn.
 # =============================================================================
 module "storage_object" {
   source = "github.com/neticdk-k8s/terraform-netic-cloud-modules//modules/storage/object/wrapper"
 
+  for_each = toset(var.storage_config.names)
+
   storage = {
-    name = var.storage_config.name
+    name = each.value
 
     ovh = {
       project_id       = var.cloud_settings.ovh.project_id
@@ -119,6 +122,7 @@ module "storage_object" {
   }
 }
 
+/*
 # =============================================================================
 # Kubernetes — OVH Kubernetes Utility Cluster
 # =============================================================================

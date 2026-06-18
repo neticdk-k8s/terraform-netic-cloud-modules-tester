@@ -20,12 +20,10 @@ variable "cloud_settings" {
   }
 }
 
-# https://pkg.opnsense.org/releases/26.1/
 variable "image_config" {
   type = object({
-    name             = optional(string, "OPNsense26_1")
-    # source_url       = optional(string, "https://mirror.dns-root.de/opnsense/releases/25.1/OPNsense-25.1-nano-amd64.img.bz2")
-    source_url       = optional(string,"https://pkg.opnsense.org/releases/26.1/OPNsense-26.1-nano-amd64.img.bz2")
+    name             = optional(string, "OPNsense")
+    source_url       = optional(string, "https://mirror.dns-root.de/opnsense/releases/25.1/OPNsense-25.1-nano-amd64.img.bz2")
     local_file_path  = optional(string, null)
     disk_format      = optional(string, "raw")
     container_format = optional(string, "bare")

@@ -1,10 +1,11 @@
-# State-nøglen sættes bevidst IKKE her — den skal angives pr. template ved init,
-# så to templates aldrig deler (og overskriver) samme state-fil:
-#   tofu init -backend-config="key=<template>_<cloud>_<branch>/tofu.tfstate"
+# State-nøglen OG bucket sættes bevidst IKKE her — de angives ved init, så
+# to templates aldrig deler (og overskriver) samme state-fil, og bucket kan
+# styres fra en GitHub-variabel (vars.TF_STATE_BUCKET):
+#   tofu init -backend-config="bucket=<bucket>" \
+#             -backend-config="key=<template>_<cloud>_<branch>/tofu.tfstate"
 # Workflowet gør dette automatisk.
 terraform {
   backend "s3" {
-    bucket = "terraformstate09999"
     region = "gra"
 
     endpoints = {

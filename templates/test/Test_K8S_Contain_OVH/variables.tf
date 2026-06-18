@@ -23,7 +23,7 @@ variable "gitops_ssh_key" {
 variable "ovh_api_region" {
   type        = string
   description = "OVH API endpoint"
-  default     = "ovh-ca"
+  default     = "ovh-eu"
 }
 
 variable "cloud_settings" {
@@ -39,7 +39,7 @@ variable "cloud_settings" {
   default = {
     region = "GRA9"
     ovh = {
-      project_id = "67241ca1d8b349ce9f6fefb72348bad2"
+      project_id = "bb219a2fd02c487798bbb0b349f622a5"
     }
     network_id      = null
     ip_restrictions = []
@@ -100,7 +100,7 @@ variable "registry_config" {
 
 variable "storage_config" {
   type = object({
-    name = string
+    names = list(string)
     ovh = object({
       region           = optional(string, "GRA")
       versioning       = optional(string, "enabled")
@@ -108,9 +108,9 @@ variable "storage_config" {
       object_lock_days = optional(number, 0)
     })
   })
-  description = "OVH Object Storage konfiguration"
+  description = "OVH Object Storage konfiguration — ét bucket pr. navn i names"
   default = {
-    name = "netictest-ovh-stg"
+    names = ["k8s_mimir_tbr", "k8s_tempo_tbr", "k8s_loki_tbr"]
     ovh = {
       region           = "GRA"
       versioning       = "enabled"

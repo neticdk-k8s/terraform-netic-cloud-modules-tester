@@ -21,22 +21,23 @@ output "registry_user_passwords" {
   sensitive   = true
 }
 
-output "storage_object_id" {
-  description = "ID of the object storage resource"
-  value       = module.storage_object.storage_id
+*/
+
+output "storage_object_ids" {
+  description = "Map af storage account-navn til ID"
+  value       = { for k, m in module.storage_object : k => m.storage_id }
 }
 
-output "storage_object_name" {
-  description = "Name of the object storage resource"
-  value       = module.storage_object.storage_name
+output "storage_object_names" {
+  description = "Map af storage account-navn til oprettet navn"
+  value       = { for k, m in module.storage_object : k => m.storage_name }
 }
 
-output "storage_object_connection_string" {
-  description = "Primary connection string for the Azure Blob storage account"
-  value       = module.storage_object.connection_string
+output "storage_object_connection_strings" {
+  description = "Map af storage account-navn til primary connection string"
+  value       = { for k, m in module.storage_object : k => m.connection_string }
   sensitive   = true
 }
-*/
 
 output "service_cluster_id" {
   description = "ID of the service Kubernetes cluster"

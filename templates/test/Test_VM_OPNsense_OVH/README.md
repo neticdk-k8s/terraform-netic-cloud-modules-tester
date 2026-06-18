@@ -38,21 +38,26 @@ cloud_settings = {
 }
 ```
 
-### `network_config`
+### `networks`
+
+Liste af private vRack-netværk. Hvert element bliver til et netværk + subnet, og VM'en får et NIC på hvert (i listens rækkefølge).
 
 ```hcl
-network_config = {
-  name    = "vnet_test_opnsense_ovh"
-  vlan_id = 321            # Unikt VLAN-ID på tværs af vRack (1–4000)
-  regions = [
-    {
-      region     = "GRA9"
-      subnet     = "10.0.15.0/24"
-      dhcp       = true
-      no_gateway = true    # OPNsense er selv gateway
-    }
-  ]
-}
+networks = [
+  {
+    name    = "vnet_test_opnsense_ovh"
+    vlan_id = 321            # Unikt VLAN-ID på tværs af vRack (1–4000)
+    regions = [
+      {
+        region     = "GRA9"
+        subnet     = "10.0.15.0/24"
+        dhcp       = true
+        no_gateway = true    # OPNsense er selv gateway
+      }
+    ]
+  },
+  # ... flere netværk efter behov
+]
 ```
 
 ### `vm_config`

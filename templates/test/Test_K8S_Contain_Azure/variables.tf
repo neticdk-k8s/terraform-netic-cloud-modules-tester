@@ -23,7 +23,7 @@ variable "gitops_ssh_key" {
 variable "ovh_api_region" {
   type        = string
   description = "OVH API endpoint — påkrævet af delt providers.tf"
-  default     = "ovh-ca"
+  default     = "ovh-eu"
 }
 
 variable "cloud_settings" {
@@ -86,15 +86,16 @@ variable "registry_config" {
 
 variable "storage_config" {
   type = object({
-    name             = string
+    names            = list(string)
     replication_type = optional(string, "LRS")
     versioning       = optional(bool, true)
     retention_days   = optional(number, 7)
     container_name   = optional(string, "data")
   })
-  description = "Azure Blob Storage konfiguration — navn skal være globalt unikt, 3-24 lowercase alfanumeriske tegn"
+  description = "Azure Blob Storage konfiguration — ét storage account pr. navn i names. Navne skal være globalt unikke, 3-24 lowercase alfanumeriske tegn (ingen underscores)"
   default = {
-    name             = "neticteststg001"
+    # Azure storage account-navne tillader ikke underscores; mimir/tempo/loki i underscore-fri form
+    names            = ["k8smimirtbr", "k8stempotbr", "k8slokitbr"]
     replication_type = "LRS"
     versioning       = true
     retention_days   = 7

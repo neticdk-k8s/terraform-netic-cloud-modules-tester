@@ -90,7 +90,9 @@ jobs:
       - name: Tofu Init
         working-directory: ${{ env.TEMPLATE_DIR }}
         run: |
-          tofu init -backend-config="key=${{ inputs.template }}_${{ inputs.cloud }}_${{ inputs.branch }}/tofu.tfstate"
+          tofu init \
+            -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" \
+            -backend-config="key=${{ inputs.template }}_${{ inputs.cloud }}_${{ inputs.branch }}/tofu.tfstate"
 
       - name: Tofu Validate
         working-directory: ${{ env.TEMPLATE_DIR }}
