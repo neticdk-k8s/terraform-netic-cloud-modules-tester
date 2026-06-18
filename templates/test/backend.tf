@@ -6,10 +6,10 @@
 # Workflowet gør dette automatisk.
 terraform {
   backend "s3" {
-    region = "bhs"
+    region = "gra"
 
     endpoints = {
-      s3 = "https://s3.bhs.io.cloud.ovh.net"
+      s3 = "https://s3.gra.io.cloud.ovh.net"
     }
 
     skip_credentials_validation = true
