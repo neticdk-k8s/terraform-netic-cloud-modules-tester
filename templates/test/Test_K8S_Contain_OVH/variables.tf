@@ -110,7 +110,7 @@ variable "storage_config" {
   })
   description = "OVH Object Storage konfiguration — ét bucket pr. navn i names"
   default = {
-    names = ["k8s_mimir_tbr", "k8s_tempo_tbr", "k8s_loki_tbr"]
+    names = ["k8s-mimir-tbr", "k8s-tempo-tbr", "k8s-loki-tbr"]
     ovh = {
       region           = "UK"
       versioning       = "enabled"

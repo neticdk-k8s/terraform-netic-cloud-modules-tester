@@ -101,8 +101,8 @@ module "service_cluster_kubernetes_config" {
 
 # =============================================================================
 # Storage — OVH Object Storage
-# Ét bucket pr. navn i var.storage_config.names (k8s_mimir_tbr, k8s_tempo_tbr,
-# k8s_loki_tbr). for_each gør hver instans adresserbar på sit navn.
+# Ét bucket pr. navn i var.storage_config.names (k8s-mimir-tbr, k8s-tempo-tbr,
+# k8s-loki-tbr). for_each gør hver instans adresserbar på sit navn.
 # =============================================================================
 module "storage_object" {
   source = "github.com/neticdk-k8s/terraform-netic-cloud-modules//modules/storage/object/wrapper"
