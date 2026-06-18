@@ -30,7 +30,6 @@ output "service_cluster_kubeconfig" {
   value       = module.service_cluster.kubeconfig
   sensitive   = true
 }
-/*
 output "utility_cluster_id" {
   description = "ID of the utility Kubernetes cluster"
   value       = module.utility_cluster.cluster_id
@@ -41,7 +40,6 @@ output "utility_cluster_kubeconfig" {
   value       = module.utility_cluster.kubeconfig
   sensitive   = true
 }
-*/
 
 # tofu output -raw service_cluster_kubeconfig > ~/.kube/ovhs.yaml
 # tofu output -raw utility_cluster_kubeconfig > ~/.kube/ovhu.yaml
