@@ -37,7 +37,7 @@ variable "cloud_settings" {
   })
   description = "OVH cloud settings — region, projekt ID og netværk"
   default = {
-    region = "GRA9"
+    region = "UK1"
     ovh = {
       project_id = "bb219a2fd02c487798bbb0b349f622a5"
     }
@@ -69,7 +69,7 @@ variable "network_config" {
       no_gateway = false
       regions = [
         {
-          region = "GRA9"
+          region = "UK1"
           subnet = "10.0.12.0/24"
           dhcp   = true
         }
@@ -83,7 +83,7 @@ variable "registry_config" {
     deploy = bool
     name   = string
     ovh = object({
-      region = optional(string, "GRA")
+      region = optional(string, "UK1")
     })
     user_email = optional(string, "ci@example.com")
   })
@@ -102,7 +102,7 @@ variable "storage_config" {
   type = object({
     names = list(string)
     ovh = object({
-      region           = optional(string, "GRA")
+      region           = optional(string, "UK1")
       versioning       = optional(string, "enabled")
       encryption_sse   = optional(string, "AES256")
       object_lock_days = optional(number, 0)
@@ -112,7 +112,7 @@ variable "storage_config" {
   default = {
     names = ["k8s_mimir_tbr", "k8s_tempo_tbr", "k8s_loki_tbr"]
     ovh = {
-      region           = "GRA"
+      region           = "UK1"
       versioning       = "enabled"
       encryption_sse   = "AES256"
       object_lock_days = 0
@@ -183,13 +183,13 @@ variable "service_cluster" {
     cluster_config = {
       cluster_name = "k8s-netic-services-test"
       tags = {
-        "owner"       = "team-tbr"
+        "owner"       = "team-azure"
         "cost_center" = "test-ops"
       }
     }
     node_config = {
-      node_size          = "test-large"
-      node_count         = 1
+      node_size          = "test-medium"
+      node_count         = 2
       min_count          = 1
       max_count          = 5
       autoscale_enabled  = false
@@ -237,7 +237,7 @@ variable "utility_cluster" {
     cluster_config = {
       cluster_name = "k8s-netic-utility-test"
       tags = {
-        "owner"       = "team-tbr"
+        "owner"       = "team-azure"
         "cost_center" = "test-ops"
       }
     }

@@ -166,7 +166,7 @@ variable "service_cluster" {
     cluster_config = {
       cluster_name = "aks-netic-services-test"
       tags = {
-        "owner"       = "team-tbr"
+        "owner"       = "team-azure"
         "cost_center" = "test-ops"
       }
     }
@@ -220,7 +220,7 @@ variable "utility_cluster" {
     cluster_config = {
       cluster_name = "aks-netic-utility-test"
       tags = {
-        "owner"       = "team-tbr"
+        "owner"       = "team-azure"
         "cost_center" = "test-ops"
       }
     }

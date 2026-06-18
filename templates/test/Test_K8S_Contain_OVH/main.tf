@@ -122,7 +122,7 @@ module "storage_object" {
   }
 }
 
-/*
+
 # =============================================================================
 # Kubernetes — OVH Kubernetes Utility Cluster
 # =============================================================================
@@ -167,4 +167,3 @@ module "utility_cluster_kubernetes_config" {
   depends_on = [module.utility_cluster_flux_bootstrap]
 }
 
-*/
