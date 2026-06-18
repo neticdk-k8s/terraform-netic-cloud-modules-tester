@@ -122,6 +122,39 @@ module "storage_object" {
   }
 }
 
+# =============================================================================
+# Storage access — dedikeret bruger + S3-nøgler med adgang til de tre buckets
+# Nøglerne eksponeres som outputs og hentes af workflowet (kun til test).
+# =============================================================================
+resource "ovh_cloud_project_user" "storage" {
+  service_name = var.cloud_settings.ovh.project_id
+  description  = "TF-managed storage access (mimir/tempo/loki)"
+  role_names   = ["objectstore_operator"]
+}
+
+resource "ovh_cloud_project_user_s3_credential" "storage" {
+  service_name = var.cloud_settings.ovh.project_id
+  user_id      = ovh_cloud_project_user.storage.id
+}
+
+# Begræns brugeren til netop de tre buckets
+resource "ovh_cloud_project_user_s3_policy" "storage" {
+  service_name = var.cloud_settings.ovh.project_id
+  user_id      = ovh_cloud_project_user.storage.id
+
+  policy = jsonencode({
+    Statement = [{
+      Effect = "Allow"
+      Action = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation"]
+      Resource = flatten([
+        for n in var.storage_config.names : [
+          "arn:aws:s3:::${n}",
+          "arn:aws:s3:::${n}/*",
+        ]
+      ])
+    }]
+  })
+}
 
 # =============================================================================
 # Kubernetes — OVH Kubernetes Utility Cluster

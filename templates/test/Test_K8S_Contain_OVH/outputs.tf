@@ -20,6 +20,17 @@ output "storage_object_names" {
   description = "Map af bucket-navn til oprettet storage-navn"
   value       = { for k, m in module.storage_object : k => m.storage_name }
 }
+
+output "storage_s3_access_key" {
+  description = "S3 access key id for storage-brugeren (adgang til de tre buckets)"
+  value       = ovh_cloud_project_user_s3_credential.storage.access_key_id
+}
+
+output "storage_s3_secret_key" {
+  description = "S3 secret access key for storage-brugeren"
+  value       = ovh_cloud_project_user_s3_credential.storage.secret_access_key
+  sensitive   = true
+}
 output "service_cluster_id" {
   description = "ID of the service Kubernetes cluster"
   value       = module.service_cluster.cluster_id

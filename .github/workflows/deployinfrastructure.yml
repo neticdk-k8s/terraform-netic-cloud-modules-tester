@@ -118,26 +118,54 @@ jobs:
         working-directory: ${{ env.TEMPLATE_DIR }}
         run: tofu apply -auto-approve tfplan
 
-      # Simpel har ét kubeconfig-output, Contain har ét pr. cluster
-      - name: Save kubeconfig
-        if: ${{ inputs.action == 'deploy' && startsWith(inputs.template, 'Test_K8S') }}
+      # Konventions-drevet: workflowet kender ikke template-navne, men reagerer på
+      # hvilke outputs der findes. Et output der ender på "kubeconfig" bliver en
+      # .yaml; eksponerer et template storage_s3_* nøgler, samles de i en .env.
+      # Tilføj nye output-typer her ét sted — ikke per-template if's.
+      - name: Collect outputs into artifacts
+        if: ${{ inputs.action == 'deploy' }}
         working-directory: ${{ env.TEMPLATE_DIR }}
         run: |
-          if [[ "${{ inputs.template }}" == "Test_K8S_Contain" ]]; then
-            tofu output -raw service_cluster_kubeconfig > kubeconfig-service.yaml
-            tofu output -raw utility_cluster_kubeconfig > kubeconfig-utility.yaml
-          else
-            tofu output -raw kubeconfig > kubeconfig.yaml
+          mkdir -p artifacts
+          json=$(tofu output -json)
+
+          # Alle *kubeconfig-outputs -> hver sin .yaml
+          for name in $(echo "$json" | jq -r 'keys[] | select(endswith("kubeconfig"))'); do
+            tofu output -raw "$name" > "artifacts/${name}.yaml"
+          done
+
+          # S3-creds hvis template'et eksponerer dem
+          if echo "$json" | jq -e 'has("storage_s3_access_key")' >/dev/null; then
+            {
+              echo "AWS_ACCESS_KEY_ID=$(tofu output -raw storage_s3_access_key)"
+              echo "AWS_SECRET_ACCESS_KEY=$(tofu output -raw storage_s3_secret_key)"
+            } > artifacts/s3-creds.env
           fi
 
-      # kubeconfig gemmes ikke i repo af sikkerhedshensyn — kun tilgængelig som artifact i kort tid
-      - name: Upload kubeconfig
-        if: ${{ inputs.action == 'deploy' && startsWith(inputs.template, 'Test_K8S') }}
+      # =====================================================================
+      # ⚠️  MÅ IKKE BRUGES I PRODUKTION
+      # Dette uploader hemmeligheder (kubeconfig, S3-nøgler) i KLARTEKST som
+      # artifact. Alle med read-adgang til repoet kan hente dem, og de ligger
+      # i hele retention-perioden. Kun acceptabelt til kortlivet test-infra.
+      #
+      # Produktions-alternativer (vælg efter behov):
+      #   1. Skriv credentials til en secret-manager (HashiCorp Vault,
+      #      Azure Key Vault, AWS Secrets Manager) i stedet for artifact.
+      #   2. Push tilbage som GitHub Actions secret via `gh secret set`
+      #      (kræver token med secrets:write) — så maskeres de i logs.
+      #   3. Brug kortlivede/federerede credentials (OIDC) der udstedes
+      #      just-in-time, så intet langlivet hemmeligt behøver opbevares.
+      #   4. Undlad helt at eksponere kubeconfig; tilgå clusteret via en
+      #      bastion/OIDC-baseret kube-login i stedet.
+      # =====================================================================
+      - name: Upload outputs (TEST ONLY — se advarsel ovenfor)
+        if: ${{ inputs.action == 'deploy' }}
         uses: actions/upload-artifact@v4
         with:
-          name: kubeconfig-${{ inputs.template }}_${{ inputs.cloud }}
-          path: ${{ env.TEMPLATE_DIR }}/kubeconfig*.yaml
+          name: outputs-${{ inputs.template }}_${{ inputs.cloud }}
+          path: ${{ env.TEMPLATE_DIR }}/artifacts/
           retention-days: 1
+          if-no-files-found: ignore
 
       - name: Tofu Destroy
         if: ${{ inputs.action == 'destroy' }}
