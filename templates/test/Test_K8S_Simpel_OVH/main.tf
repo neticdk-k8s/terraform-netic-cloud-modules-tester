@@ -35,13 +35,20 @@ module "network" {
 
 # =============================================================================
 # Container Registry
+# Random counter hægtes på navnet, så det bliver unikt på tværs af deploys
+# (afløser det tidligere hardcodede projekt-id i navnet).
 # =============================================================================
+resource "random_integer" "registry_suffix" {
+  min = 10000
+  max = 99999
+}
+
 module "registry" {
   source = "github.com/neticdk-k8s/terraform-netic-cloud-modules//modules/container_registry/wrapper"
 
   container_registry = {
     deploy = var.registry_config.deploy
-    name   = var.registry_config.name
+    name   = "${var.registry_config.name}${random_integer.registry_suffix.result}"
 
     azure = var.cloud_settings.cloud_provider == "azure" ? {
       location       = var.cloud_settings.region

@@ -44,7 +44,7 @@ variable "cloud_settings" {
     azure = {
       subscription_id = "9cbb71c9-7f62-4277-a708-f89d1f020134"
       resource_group  = "rg-tbr-test"
-      dns_prefix      = "netictest"
+      dns_prefix      = "neticcontain"
     }
     network_id      = null
     ip_restrictions = []

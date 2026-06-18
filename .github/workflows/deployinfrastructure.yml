@@ -49,6 +49,7 @@ jobs:
       # S3 state backend
       AWS_ACCESS_KEY_ID:      ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      BUCKET_NAME:            ${{ vars.BUCKET_NAME }}
       # OpenStack provider
       OS_USERNAME:            ${{ secrets.OS_USERNAME }}
       OS_PASSWORD:            ${{ secrets.OS_PASSWORD }}
@@ -91,7 +92,7 @@ jobs:
         working-directory: ${{ env.TEMPLATE_DIR }}
         run: |
           tofu init \
-            -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" \
+            -backend-config="bucket=$BUCKET_NAME" \
             -backend-config="key=${{ inputs.template }}_${{ inputs.cloud }}_${{ inputs.branch }}/tofu.tfstate"
 
       - name: Tofu Validate

@@ -43,7 +43,7 @@ variable "registry_config" {
   description = "Container registry configuration"
   default = {
     deploy     = true
-    name       = "registry67241ca1d8b349ce9f6fefb72348bad2"
+    name       = "registry-tbr"
     user_email = "ci@example.com"
     azure      = { sku = "Standard" }
     ovh        = { region = "DE" }
