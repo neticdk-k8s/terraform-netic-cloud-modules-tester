@@ -13,7 +13,7 @@ variable "cloud_settings" {
   })
   description = "OVH project and region"
   default = {
-    region = "GRA9"
+    region = "UK1"
     ovh = {
       project_id = "bb219a2fd02c487798bbb0b349f622a5"
     }
@@ -46,8 +46,8 @@ variable "networks" {
       vlan_id = 321
       regions = [
         {
-          region     = "GRA9"
-          subnet     = "10.0.15.0/24"
+          region     = "UK1"
+          subnet     = "10.0.25.0/24"
           dhcp       = true
           no_gateway = true # OPNsense skal selv være gateway på det private net
         }
@@ -58,8 +58,8 @@ variable "networks" {
       vlan_id = 324
       regions = [
         {
-          region     = "GRA9"
-          subnet     = "10.0.17.0/24"
+          region     = "UK1"
+          subnet     = "10.0.25.0/24"
           dhcp       = true
           no_gateway = true
         }
@@ -70,8 +70,8 @@ variable "networks" {
       vlan_id = 326
       regions = [
         {
-          region     = "GRA9"
-          subnet     = "10.0.19.0/24"
+          region     = "UK1"
+          subnet     = "10.0.27.0/24"
           dhcp       = true
           no_gateway = true
         }
@@ -85,7 +85,7 @@ variable "vm_config" {
     name             = optional(string, "opnsense-fw-test_tbr")
     size             = optional(string, "b2-7")
     resource_group   = optional(string, "rg-test-opnsense")
-    image_name       = optional(string, "opnsense-fw-test2026-06-16")
+    image_name       = optional(string, "OPNsense26_1") #"opnsense-custom-26-10"
     ssh_public_key   = optional(string, null)
     create_public_ip = optional(bool, true)
     security_groups  = optional(list(string), ["default"])
@@ -94,24 +94,11 @@ variable "vm_config" {
   default     = {}
 }
 
-variable "image_config" {
-  type = object({
-    upload           = optional(bool, true)
-    name             = optional(string, "OPNsense")
-    source_url       = optional(string, "https://mirror.dns-root.de/opnsense/releases/25.1/OPNsense-25.1-nano-amd64.img.bz2")
-    local_file_path  = optional(string, null)
-    disk_format      = optional(string, "raw")
-    container_format = optional(string, "bare")
-    decompress       = optional(bool, true)
-    min_disk_gb      = optional(number, 10)
-  })
-  description = <<-EOT
-    OPNsense custom image. Når upload = true, uploades imaget til Glance via openstack_images_image_v2,
-    og VM'en peger på det. Sæt local_file_path for at uploade en lokal fil i stedet for source_url.
-    Bemærk: OPNsense nano-imaget er raw (disk_format = "raw"). decompress = true udpakker .bz2/.gz automatisk.
-    Sæt upload = false hvis imaget allerede findes i projektet — så bruges vm_config.image_name som opslag.
-  EOT
-  default     = {}
+
+variable "test_vm_images" {
+  type        = list(string)
+  description = "Test-images til de tre VM-instanser (index 0, 1, 2 svarer til vm[1], vm[2], vm[3])"
+  default     = ["vpn3_github", "vpn2_custom", "OPNsense26_1"]
 }
 
 variable "tags" {
