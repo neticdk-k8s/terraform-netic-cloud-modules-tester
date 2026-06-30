@@ -59,7 +59,7 @@ variable "networks" {
       regions = [
         {
           region     = "UK1"
-          subnet     = "10.0.25.0/24"
+          subnet     = "10.0.26.0/24"
           dhcp       = true
           no_gateway = true
         }

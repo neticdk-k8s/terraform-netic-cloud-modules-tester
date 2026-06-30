@@ -73,7 +73,7 @@ module "vm2" {
   depends_on = [module.network]
 }
 
-
+/*
 module "vm3" {
   source   = "github.com/neticdk-k8s/terraform-netic-cloud-modules//modules/vm/wrapper"
 #  for_each = toset([for i in range(3) : tostring(i + 1)])
@@ -99,6 +99,7 @@ module "vm3" {
 
   depends_on = [module.network]
 }
+*/
 
 
 # =============================================================================
